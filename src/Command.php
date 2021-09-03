@@ -177,10 +177,6 @@ class Command extends \yii\db\Command
             try {
                 $attempt++;
                 $this->response = $this->preparedStatement->execute(...$this->formatParams());
-                try {
-                    $r = $this->response->getBodyField(Keys::SQL_INFO);
-                } catch (\Throwable $e) {}
-
                 break;
             } catch (\Exception $e) {
                 $rawSql = $rawSql ?: $this->getRawSql();
