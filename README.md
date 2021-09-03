@@ -84,3 +84,4 @@ Future plans
 * Connection slaves support
 * Queue
 * Cache
+* Sessions
