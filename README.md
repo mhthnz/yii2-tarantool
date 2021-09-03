@@ -30,6 +30,38 @@ or add
 
 to the require section of your `composer.json` file.
 
+Configuration
+------------
+* [Dsn options](https://github.com/tarantool-php/client#dsn-string)
+```php
+return [
+    'components' => [
+        // Tarantool connection setup
+        'tarantool' => [
+            'class' => \mhthnz\tarantool\Connection::class,
+            'dsn' => 'tcp://username:password@localhost:3301/?connect_timeout=5.0&max_retries=3',
+        ],
+        
+    ],
+    
+    'bootstrap' => ['debug'],
+    
+    'modules' => [
+        //Debug panel setup
+        'debug' => [
+            'class' => 'yii\debug\Module',
+            'panels' => [
+                'tarantool' => [
+                    'class' => \mhthnz\tarantool\debug\TarantoolPanel::class,
+                    'db' => 'tarantool', // Tarantool component id
+                ],
+            ],
+            'allowedIPs' => ['127.0.0.1', '::1'],
+        ],
+        
+    ],
+];
+```
 
 Features
 ------------
@@ -38,6 +70,7 @@ Features
 * `Schema` abstraction, `TableSchema` and `ColumnSchema`
 * Model validators `UniqueValidator`, `ExistsValidator`
 * Data widgets like `DetailView`, `ListView`, `GridView` using `ActiveDataProvider`
+* Debug panel
 
 Future plans
 ------------
