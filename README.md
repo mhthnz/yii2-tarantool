@@ -70,7 +70,7 @@ Features
 * `Schema` abstraction, `TableSchema` and `ColumnSchema`
 * Model validators `UniqueValidator`, `ExistsValidator`
 * Data widgets like `DetailView`, `ListView`, `GridView` using `ActiveDataProvider`
-* Debug panel
+* Debug panel with explain
 
 Future plans
 ------------
