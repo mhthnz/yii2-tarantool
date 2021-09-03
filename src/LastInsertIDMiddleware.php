@@ -32,21 +32,22 @@ class LastInsertIDMiddleware implements Middleware
         $this->_db = $db;
     }
 
+    /**
+     * @param Request $request
+     * @param Handler $handler
+     * @return Response
+     * @throws \Tarantool\Client\Exception\ClientException
+     */
     public function process(Request $request, Handler $handler): Response
     {
         $response = $handler->handle($request);
         if (
-            $request instanceof ExecuteRequest ||
-            $request instanceof InsertRequest ||
-            $request instanceof UpsertRequest) {
-            try{
-                $data = $response->getBodyField(Keys::SQL_INFO);
-                if (isset($data[Keys::SQL_INFO_AUTO_INCREMENT_IDS])) {
-                    $this->_db->lastInsertID = array_pop($data[Keys::SQL_INFO_AUTO_INCREMENT_IDS]);
-                }
-            } catch (\OutOfRangeException $e) {
+            $request instanceof ExecuteRequest || $request instanceof InsertRequest
+        ) {
+            $data = $response->tryGetBodyField(Keys::SQL_INFO);
+            if ($data !== null && isset($data[Keys::SQL_INFO_AUTO_INCREMENT_IDS])) {
+                $this->_db->lastInsertID = array_pop($data[Keys::SQL_INFO_AUTO_INCREMENT_IDS]);
             }
-
         }
         return $response;
     }

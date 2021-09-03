@@ -602,7 +602,7 @@ class Connection extends Component
      */
     protected function initConnection()
     {
-        $data = $this->client->evaluate("return box.info");
+        $data = $this->client->call("box.info");
         $version = $data[0]["version"];
         $this->version = substr($version, 0, strpos($version, '-'));
         $this->instanceUuid = $data[0]["uuid"];

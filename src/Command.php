@@ -115,13 +115,8 @@ class Command extends \yii\db\Command
             $profile and Yii::beginProfile($rawSql, 'mhthnz\\tarantool\\Command::' . __METHOD__);
 
             $this->internalExecute($rawSql);
-
-            try {
-                $data = $this->response->getBodyField(Keys::SQL_INFO);
-                $n = isset($data[Keys::SQL_INFO_ROW_COUNT]) ? $data[Keys::SQL_INFO_ROW_COUNT] : 0;
-            } catch (\OutOfRangeException $e) {
-                $n = 0;
-            }
+            $data = $this->response->tryGetBodyField(Keys::SQL_INFO);
+            $n = $data !== null && isset($data[Keys::SQL_INFO_ROW_COUNT]) ? $data[Keys::SQL_INFO_ROW_COUNT] : 0;
 
             $profile and Yii::endProfile($rawSql, 'mhthnz\\tarantool\\Command::' . __METHOD__);
             $this->refreshTableSchema();
