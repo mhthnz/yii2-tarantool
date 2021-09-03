@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<phpunit bootstrap="./tests/_bootstrap.php"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         verbose="true"
+         debug="true"
+         stopOnFailure="false">
+    <testsuites>
+        <testsuite name="Yii2-tarantool Test Suite">
+            <directory>./tests</directory>
+            <exclude>./tests/classes</exclude>
+        </testsuite>
+    </testsuites>
+</phpunit>

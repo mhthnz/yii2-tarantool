@@ -1,0 +1,29 @@
+{
+    "name": "mhthnz/yii2-tarantool",
+    "description": "Tarantool connector for yii2 framework. Allow to use ActiveRecord, Schemas and more.",
+    "type": "yii2-extension",
+    "keywords": ["yii2"," tarantool", "db", "nosql"],
+    "license": "GPL-3.0+",
+    "authors": [
+        {
+            "name": "mhthnz",
+            "email": "mhthnz@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.1|^8",
+        "yiisoft/yii2": "~2.0.14",
+        "tarantool/client": "^0.9.0",
+        "rybakit/msgpack": "^0.8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "mhthnz\\tarantool\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "mhthnz\\ext": "/"
+        }
+    }
+}

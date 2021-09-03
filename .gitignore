@@ -1,0 +1,9 @@
+/.phpunit.result.cache
+.env
+.idea
+.project
+.settings
+Thumbs.db
+composer.lock
+vendor
+runtime
