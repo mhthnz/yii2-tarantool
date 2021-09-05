@@ -1,5 +1,8 @@
 Tarantool connector for yii2 framework
 ======================================
+[![Latest Stable Version](http://poser.pugx.org/mhthnz/yii2-tarantool/v)](/mhthnz/yii2-tarantool/releases/latest)
+[![Latest Unstable Version](http://poser.pugx.org/mhthnz/yii2-tarantool/v/unstable)](https://packagist.org/packages/mhthnz/yii2-tarantool)
+
 [Tarantool](https://www.tarantool.io/en/doc/latest/) connector for yii2 framework. Allow to use framework abstractions such as ActiveRecord, Schema, TableSchema, Query, ActiveQuery and etc using tarantool database.
 
 Documentation is here: [docs/README.md](docs/README.md)
@@ -7,9 +10,9 @@ Documentation is here: [docs/README.md](docs/README.md)
 Reqirements
 ------------
 
-`Tarantool >= 2.4.1`
-`PHP >= 7.1 || PHP >= 8`
-`Yii2 >= 2.0.14`
+![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/mhthnz/yii2-tarantool)
+![Tarantool version](https://img.shields.io/badge/tarantool-%3E%3D%202.4.1-blue)
+![Yii2 version](https://img.shields.io/badge/yii2-%3E%3D%202.0.14-blue)
 
 Installation
 ------------

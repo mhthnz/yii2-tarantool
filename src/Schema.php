@@ -123,8 +123,8 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
      */
     protected function findTableNames($schema = '')
     {
-        $db = $this->db->getSlave();
-        $data = $db->client->executeQuery('select "name" from "_space" where LENGTH("format") > 1 AND substr("name",1,1) != \'_\'');
+        $db = $this->db->getSlaveClient();
+        $data = $db->executeQuery('select "name" from "_space" where LENGTH("format") > 1 AND substr("name",1,1) != \'_\'');
         $tableNames = [];
         foreach ($data->getIterator() as $row) {
             $tableNames[] = $row["name"];
@@ -209,7 +209,7 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
             foreach ($row["parent_cols"] as $key => $fieldNo) {
                 $childFieldName = $row["childFormat"][$row["child_cols"][$key]]["name"];
                 $parentFieldName = $row["parentFormat"][$fieldNo]["name"];
-                $table->foreignKeys[$row["name"]][$parentFieldName] = $childFieldName;
+                $table->foreignKeys[$row["name"]][$childFieldName] = $parentFieldName;
             }
         }
 

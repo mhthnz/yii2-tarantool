@@ -203,6 +203,13 @@ class SchemaTest extends TestCase
         $this->assertEquals('order_item', $table->foreignKeys['FK_composite_fk_order_item'][0]);
         $this->assertEquals('order_id', $table->foreignKeys['FK_composite_fk_order_item']['order_id']);
         $this->assertEquals('item_id', $table->foreignKeys['FK_composite_fk_order_item']['item_id']);
+
+        $table = $schema->getTableSchema('T_constraints_3');
+        $this->assertCount(1, $table->foreignKeys);
+        $this->assertTrue(isset($table->foreignKeys['CN_constraints_3']));
+        $this->assertEquals('T_constraints_2', $table->foreignKeys['CN_constraints_3'][0]);
+        $this->assertEquals('C_id_1', $table->foreignKeys['CN_constraints_3']['C_fk_id_1']);
+        $this->assertEquals('C_id_2', $table->foreignKeys['CN_constraints_3']['C_fk_id_2']);
     }
 
 
