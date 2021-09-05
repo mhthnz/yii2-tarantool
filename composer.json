@@ -16,6 +16,9 @@
         "tarantool/client": "^0.9.0",
         "rybakit/msgpack": "^0.8.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": ">=8.5"
+    },
     "autoload": {
         "psr-4": {
             "mhthnz\\tarantool\\": "src/"
