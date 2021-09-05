@@ -21,9 +21,15 @@
             "mhthnz\\tarantool\\": "src/"
         }
     },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
     "autoload-dev": {
         "psr-4": {
-            "mhthnz\\ext": "/"
+            "mhthnz\\ext\\": "/"
         }
     }
 }
