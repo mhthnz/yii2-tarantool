@@ -123,10 +123,9 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
      */
     protected function findTableNames($schema = '')
     {
-        $db = $this->db->getSlaveClient();
-        $data = $db->executeQuery('select "name" from "_space" where LENGTH("format") > 1 AND substr("name",1,1) != \'_\'');
+        $result = $this->db->createCommand('select "name" from "_space" where LENGTH("format") > 1 AND substr("name",1,1) != \'_\'')->queryAll();
         $tableNames = [];
-        foreach ($data->getIterator() as $row) {
+        foreach ($result as $row) {
             $tableNames[] = $row["name"];
         }
 
@@ -146,31 +145,30 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
      */
     protected function loadTableSchema($name)
     {
-        $db = $this->db->getSlaveClient();
-        $data = $db->executeQuery('select "format", "id", "engine" from "_space" where "name" = :table', [':table' => $name])->getData();
+        $data = $this->db->createCommand('select "format", "id", "engine" from "_space" where "name" = :table', [':table' => $name])->queryOne();
 
-        if (!count($data) || (!isset($data[0]) || !isset($data[0][0]))) {
+        if ($data === false) {
             return null;
         }
-        $tableID = $data[0][1];
+        $tableID = $data["id"];
         $table = new TableSchema();
         $table->fullName = $table->name = $name;
-        $table->engine = $data[0][2];
+        $table->engine = $data["engine"];
 
         // Getting primary index
-        $query = $db->executeQuery('select "parts" from "_index" where "id" = :tableID limit 1', [':tableID' => $tableID]);
-        $parts = $query->getIterator()->current();
+        $parts = $this->db->createCommand('select "parts" from "_index" where "id" = :tableID limit 1', [':tableID' => $tableID])->queryOne();
         $primaryFields = [];
-        if ($query->count()) {
+        if ($parts !== false) {
             $primaryFields = ArrayHelper::getColumn($parts["parts"], 'field');
         }
 
         // Getting autoincrement fields
-        $query = $db->executeQuery('select * from "_space_sequence" where "id" = :tableID', [':tableID' => $tableID]);
+        /** @var DataReader $dataReader */
+        $dataReader = $this->db->createCommand('select * from "_space_sequence" where "id" = :tableID', [':tableID' => $tableID])->query();
         $sequences = [];
-        if ($query->count()) {
-            foreach ($query->getIterator() as $seq) {
-                if (isset($data[0][$seq['field']])) {
+        if ($dataReader->count()) {
+            foreach ($dataReader as $seq) {
+                if (isset($data['format'][$seq['field']])) {
                     // fieldNo => sequenceID
                     $sequences[$seq['field']] = $seq['sequence_id'];
                 }
@@ -178,7 +176,7 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
         }
 
         // Filling column schema, pk, autoincrement
-        foreach ($data[0][0] as $key => $info) {
+        foreach ($data["format"] as $key => $info) {
             $info['primary'] = $info['autoincrement'] = false;
             if (in_array($key, $primaryFields)) {
                 $info['primary'] = true;
@@ -194,14 +192,14 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
         }
 
         // Processing foreign keys
-        $query = $db->executeQuery('
+        $dataReader = $this->db->createCommand('
             select "_fk_constraint"."name","_fk_constraint"."child_cols", "_fk_constraint"."parent_cols", "p"."name" as "tableName", "_space"."format" as "childFormat", "p"."format" as "parentFormat"
             from "_fk_constraint" 
             left join "_space" on "_space"."id" = "_fk_constraint"."child_id"
             left join "_space" as "p" on "p"."id" = "_fk_constraint"."parent_id" 
             where "child_id" = :tableID
-        ', [':tableID' => $tableID]);
-        foreach ($query->getIterator() as $row) {
+        ', [':tableID' => $tableID])->query();
+        foreach ($dataReader as $row) {
             $table->foreignKeys[$row["name"]] = [
                 $row["tableName"]
             ];
@@ -234,17 +232,17 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
      */
     protected function loadTablePrimaryKey($tableName)
     {
-        $query = $this->db->client->executeQuery('
+        $result = $this->db->createCommand('
         select "_index"."name", "_index"."parts", "_space"."format" from "_index", "_space"
         where "_space"."name" = :table AND "_index"."id" = "_space"."id" 
         limit 1
-        ', [':table' => $tableName]);
+        ', [':table' => $tableName])->queryOne();
 
-        if (!$query->count()) {
+        if ($result === false) {
             return null;
         }
 
-        $primaryKey = $query->getIterator()->current();
+        $primaryKey = $result;
         $pkName = $primaryKey["name"];
         $fields = [];
         foreach(ArrayHelper::getColumn($primaryKey['parts'], 'field') as $fieldNo) {
@@ -271,7 +269,8 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
         ];
 
         // Processing foreign keys
-        $query = $this->db->client->executeQuery('
+        /** @var DataReader $dataReader */
+        $dataReader = $this->db->createCommand('
             SELECT "fk"."name",
                    "fk"."child_cols", 
                    "fk"."parent_cols", 
@@ -284,10 +283,10 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
             FROM "_fk_constraint" AS "fk", "_space" AS "parent"
             LEFT JOIN "_space" AS "child" ON "child"."id" = "fk"."child_id"
             WHERE "child"."name" = :tableName AND "parent"."id" = "fk"."parent_id" AND "child"."id" IS NOT NULL  
-        ', [':tableName' => $tableName]);
+        ', [':tableName' => $tableName])->query();
 
         $result = [];
-        foreach ($query->getIterator() as $row) {
+        foreach ($dataReader as $row) {
             $parentFields = $childFields = [];
             foreach ($row["parent_cols"] as $key => $fieldNo) {
                 $parentFields[] = $row["parentFormat"][$fieldNo]["name"];
@@ -332,14 +331,15 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
      */
     protected function loadTableChecks($tableName)
     {
-        $query = $this->db->client->executeQuery('
+        /** @var DataReader $dataReader */
+        $dataReader = $this->db->createCommand('
             select "i".*, "t"."format" from "_ck_constraint" AS "i", "_space" AS "t"
             WHERE "t"."name" = :tableName AND "i"."space_id" = "t"."id"
-        ', [':tableName' => $tableName]);
+        ', [':tableName' => $tableName])->query();
 
 
         $result = [];
-        foreach ($query->getIterator() as $key => $row) {
+        foreach ($dataReader->readAll() as $key => $row) {
 
             // Tarantool doesn't allow to see check index's fields, trying to parse it from expr
             $columns = ArrayHelper::getColumn($row['format'], 'name');
@@ -483,17 +483,18 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
      */
     private function loadTableConstraints($tableName, $returnType)
     {
-        $query = $this->db->client->executeQuery('
+        /** @var DataReader $dataReader */
+        $dataReader = $this->db->createCommand('
             select "i"."name", "t"."format", "i"."opts", "i"."parts" from "_index" AS "i", "_space" AS "t"
             WHERE "t"."name" = :tableName AND "t"."id" = "i"."id"
-        ', [':tableName' => $tableName]);
+        ', [':tableName' => $tableName])->query();
 
         $result = [
             'indexes' => [],
             'uniques' => [],
         ];
 
-        foreach ($query->getIterator() as $key => $row) {
+        foreach ($dataReader->readAll() as $key => $row) {
             $isPrimary = $key === 0 ? true : false;
             $name = $row['name'];
             $isUnique = $row['opts']['unique'];

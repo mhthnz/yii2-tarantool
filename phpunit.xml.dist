@@ -5,7 +5,6 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          verbose="true"
-         debug="true"
          stopOnFailure="false">
     <testsuites>
         <testsuite name="Yii2-tarantool Test Suite">

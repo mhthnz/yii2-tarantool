@@ -24,6 +24,10 @@ class SchemaTest extends TestCase
     {
         parent::setUp();
         $this->mockApplication();
+        $this->dropConstraints();
+        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        $this->getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
+        $this->dropTables();
         $this->createStructure();
         $this->getConnection()->createCommand()->createView('animal_view', 'SELECT * FROM "animal"')->execute();
     }

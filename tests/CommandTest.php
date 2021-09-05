@@ -17,7 +17,12 @@ class CommandTest extends TestCase
     {
         parent::setUp();
         $this->mockApplication();
+        $this->dropConstraints();
+        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        $this->getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
+        $this->dropTables();
         $this->createStructure();
+        parent::setUp();
     }
 
     /**
@@ -26,13 +31,8 @@ class CommandTest extends TestCase
     protected function tearDown(): void
     {
         $this->dropConstraints();
-        if ($this->getDb()->getSchema()->getTableSchema('testCreateView')) {
-            $this->getDb()->createCommand()->dropView('testCreateView')->execute();
-        }
-        if ($this->getDb()->getSchema()->getTableSchema('animal_view')) {
-            $this->getDb()->createCommand()->dropView('animal_view')->execute();
-        }
-
+        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        $this->getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
         $this->dropTables();
         parent::tearDown();
     }
@@ -769,7 +769,7 @@ INSERT INTO {{type}} ([[int_col]], [[char_col]], [[float_col]], [[blob_col]], [[
         $db = $this->getConnection();
         $db->createCommand('CREATE VIEW "animal_view" AS SELECT * FROM "animal"')->execute();
         $viewName = 'animal_view';
-        $this->assertNotNull($db->getSchema()->getTableSchema($viewName));
+        $this->assertNotNull($db->getSchema()->getTableSchema($viewName, true));
         $db->createCommand()->dropView($viewName)->execute();
 
         $this->assertNull($db->getSchema()->getTableSchema($viewName));
