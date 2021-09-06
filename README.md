@@ -43,7 +43,7 @@ return [
         // Tarantool connection setup
         'tarantool' => [
             'class' => \mhthnz\tarantool\Connection::class,
-            'dsn' => 'tcp://username:password@localhost:3301/?connect_timeout=5.0&max_retries=3',
+            'dsn' => 'tcp://username:password@localhost:3301/?connect_timeout=5&max_retries=3',
         ],
         
     ],
