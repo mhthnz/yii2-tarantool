@@ -6,6 +6,11 @@
          convertWarningsToExceptions="true"
          verbose="true"
          stopOnFailure="false">
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+    </coverage>
     <testsuites>
         <testsuite name="Yii2-tarantool Test Suite">
             <directory>./tests</directory>
