@@ -5,7 +5,7 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace mhthnz\ext\classes;
+namespace mhthnz\tarantool\tests\classes;
 
 use yii\behaviors\AttributeTypecastBehavior;
 

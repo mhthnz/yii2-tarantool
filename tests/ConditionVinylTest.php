@@ -1,6 +1,6 @@
 <?php
 
-namespace mhthnz\ext;
+namespace mhthnz\tarantool\tests;
 
 
 class ConditionVinylTest extends ConditionTest

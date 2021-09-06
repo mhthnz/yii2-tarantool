@@ -1,18 +1,18 @@
 <?php
 
-namespace mhthnz\ext;
+namespace mhthnz\tarantool\tests;
 
 
-use mhthnz\ext\classes\ActiveRecord;
-use mhthnz\ext\classes\ActiveRecordTestTrait;
-use mhthnz\ext\classes\ChildAR;
-use mhthnz\ext\classes\Customer;
-use mhthnz\ext\classes\Item;
-use mhthnz\ext\classes\Order;
-use mhthnz\ext\classes\OrderItem;
-use mhthnz\ext\classes\OrderItemWithNullFK;
-use mhthnz\ext\classes\OrderWithNullFK;
-use mhthnz\ext\classes\ParentAR;
+use mhthnz\tarantool\tests\classes\ActiveRecord;
+use mhthnz\tarantool\tests\classes\ActiveRecordTestTrait;
+use mhthnz\tarantool\tests\classes\ChildAR;
+use mhthnz\tarantool\tests\classes\Customer;
+use mhthnz\tarantool\tests\classes\Item;
+use mhthnz\tarantool\tests\classes\Order;
+use mhthnz\tarantool\tests\classes\OrderItem;
+use mhthnz\tarantool\tests\classes\OrderItemWithNullFK;
+use mhthnz\tarantool\tests\classes\OrderWithNullFK;
+use mhthnz\tarantool\tests\classes\ParentAR;
 use mhthnz\tarantool\Schema;
 use yii\db\ActiveQuery;
 use yii\helpers\ArrayHelper;

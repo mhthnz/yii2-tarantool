@@ -8,9 +8,9 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace mhthnz\ext\classes;
+namespace mhthnz\tarantool\tests\classes;
 
-use mhthnz\ext\CommonActiveRecordTest;
+use mhthnz\tarantool\tests\CommonActiveRecordTest;
 use yii\db\ActiveQuery;
 
 /**

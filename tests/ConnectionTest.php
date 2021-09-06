@@ -1,10 +1,10 @@
 <?php
 
-namespace mhthnz\ext;
+namespace mhthnz\tarantool\tests;
 
-use mhthnz\ext\classes\AnyCaseValue;
-use mhthnz\ext\classes\AnyValue;
-use mhthnz\ext\classes\Customer;
+use mhthnz\tarantool\tests\classes\AnyCaseValue;
+use mhthnz\tarantool\tests\classes\AnyValue;
+use mhthnz\tarantool\tests\classes\Customer;
 use mhthnz\tarantool\Connection;
 use yii\caching\ArrayCache;
 use yii\caching\FileCache;

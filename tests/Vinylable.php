@@ -1,6 +1,6 @@
 <?php
 
-namespace mhthnz\ext;
+namespace mhthnz\tarantool\tests;
 
 trait Vinylable
 {

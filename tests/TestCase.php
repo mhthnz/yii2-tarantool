@@ -1,6 +1,6 @@
 <?php
 
-namespace mhthnz\ext;
+namespace mhthnz\tarantool\tests;
 
 
 
@@ -51,6 +51,20 @@ class TestCase extends \PHPUnit\Framework\TestCase
             $this->conn->open();
         }
         return $this->conn;
+    }
+
+    /**
+     * Compatability between phpunit versions.
+     * @param $p
+     * @param $v
+     */
+    public function checkRegex($p, $v)
+    {
+        if (method_exists($this, 'assertMatchesRegularExpression')) {
+            $this->assertMatchesRegularExpression($p, $v);
+        } else {
+            $this->assertRegExp($p, $v);
+        }
     }
 
     protected function invokeMethod($object, $method, $args = [], $revoke = true)

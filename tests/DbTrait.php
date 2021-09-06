@@ -1,10 +1,10 @@
 <?php
 
-namespace mhthnz\ext;
+namespace mhthnz\tarantool\tests;
 
-use mhthnz\ext\classes\ActiveRecord;
-use mhthnz\ext\classes\ChildAR;
-use mhthnz\ext\classes\ParentAR;
+use mhthnz\tarantool\tests\classes\ActiveRecord;
+use mhthnz\tarantool\tests\classes\ChildAR;
+use mhthnz\tarantool\tests\classes\ParentAR;
 use yii\db\SchemaBuilderTrait;
 
 trait DbTrait

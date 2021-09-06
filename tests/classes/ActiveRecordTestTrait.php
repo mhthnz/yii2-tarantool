@@ -5,13 +5,13 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace mhthnz\ext\classes;
+namespace mhthnz\tarantool\tests\classes;
 
 use yii\base\Event;
 use yii\db\ActiveRecordInterface;
 use yii\db\BaseActiveRecord;
 use yii\db\Expression;
-use mhthnz\ext\TestCase;
+use mhthnz\tarantool\tests\TestCase;
 
 /**
  * This trait provides unit tests shared by the different AR implementations.
@@ -1127,7 +1127,7 @@ trait ActiveRecordTestTrait
         $customerClass = $this->getCustomerClass();
         /* @var $orderClass BaseActiveRecord */
         $orderClass = $this->getOrderClass();
-        /* @var $this \mhthnz\ext\TestCase|ActiveRecordTestTrait */
+        /* @var $this \mhthnz\tarantool\tests\TestCase|ActiveRecordTestTrait */
 
         $afterFindCalls = [];
         Event::on(BaseActiveRecord::className(), BaseActiveRecord::EVENT_AFTER_FIND, function ($event) use (&$afterFindCalls) {

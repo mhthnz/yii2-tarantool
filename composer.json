@@ -32,7 +32,7 @@
     ],
     "autoload-dev": {
         "psr-4": {
-            "mhthnz\\ext\\": "/"
+            "mhthnz\\tarantool\\tests\\": "tests/"
         }
     }
 }

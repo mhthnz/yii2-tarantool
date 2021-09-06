@@ -1,6 +1,6 @@
 <?php
 
-namespace mhthnz\ext\classes;
+namespace mhthnz\tarantool\tests\classes;
 
 use mhthnz\tarantool\Connection;
 

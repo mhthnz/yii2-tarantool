@@ -13,6 +13,3 @@ define('VENDOR_PATH', __DIR__ . '/../vendor');
 
 require_once(VENDOR_PATH . '/autoload.php');
 require_once(VENDOR_PATH . '/yiisoft/yii2/Yii.php');
-
-Yii::setAlias('@mhthnz/ext', __DIR__);
-Yii::setAlias('@mhthnz/tarantool', dirname(__DIR__) . '/src');
