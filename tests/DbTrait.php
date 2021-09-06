@@ -86,7 +86,7 @@ trait DbTrait
             'parent_id' => $this->integer(),
             'created_at' => $this->integer()
         ], $opt);
-        $this->getDb()->createCommand()->addForeignKey('fk-child-parent', ChildAR::tableName(), 'parent_id', ParentAR::tableName(),'id', )->execute();
+        $this->getDb()->createCommand()->addForeignKey('fk-child-parent', ChildAR::tableName(), 'parent_id', ParentAR::tableName(),'id')->execute();
     }
 
 }
