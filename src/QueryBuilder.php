@@ -22,14 +22,12 @@ class QueryBuilder extends \yii\db\QueryBuilder
      * @var array mapping from abstract column types (keys) to physical column types (values).
      */
     public $typeMap = [
-        Schema::TYPE_PK => 'int NOT NULL PRIMARY KEY AUTOINCREMENT',
-        Schema::TYPE_UPK => 'int UNSIGNED NOT NULL PRIMARY KEY AUTOINCREMENT',
-        Schema::TYPE_BIGPK => 'bigint NOT NULL PRIMARY KEY AUTOINCREMENT',
-        Schema::TYPE_UBIGPK => 'bigint UNSIGNED NOT NULL PRIMARY KEY AUTOINCREMENT',
+        Schema::TYPE_PK => 'integer PRIMARY KEY AUTOINCREMENT',
+        Schema::TYPE_UPK => 'unsigned PRIMARY KEY AUTOINCREMENT',
         Schema::TYPE_CHAR => 'varchar(1)',
         Schema::TYPE_STRING => 'varchar(255)',
         Schema::TYPE_TEXT => 'string',
-        Schema::TYPE_INTEGER => 'int',
+        Schema::TYPE_INTEGER => 'integer',
         Schema::TYPE_FLOAT => 'double',
         Schema::TYPE_DOUBLE => 'double',
         Schema::TYPE_BINARY => 'varbinary',
@@ -57,6 +55,32 @@ class QueryBuilder extends \yii\db\QueryBuilder
             'yii\db\conditions\HashCondition' => 'yii\db\conditions\HashConditionBuilder',
             'yii\db\conditions\BetweenColumnsCondition' => 'yii\db\conditions\BetweenColumnsConditionBuilder',
         ];
+    }
+
+    /**
+     * Change ColumnSchemaBuilder namespace.
+     *
+     * {@inheritdoc}
+     */
+    public function getColumnType($type)
+    {
+        if ($type instanceof ColumnSchemaBuilder) {
+            $type = $type->__toString();
+        }
+
+        if (isset($this->typeMap[$type])) {
+            return $this->typeMap[$type];
+        } elseif (preg_match('/^(\w+)\((.+?)\)(.*)$/', $type, $matches)) {
+            if (isset($this->typeMap[$matches[1]])) {
+                return preg_replace('/\(.+\)/', '(' . $matches[2] . ')', $this->typeMap[$matches[1]]) . $matches[3];
+            }
+        } elseif (preg_match('/^(\w+)\s+/', $type, $matches)) {
+            if (isset($this->typeMap[$matches[1]])) {
+                return preg_replace('/^\w+/', $this->typeMap[$matches[1]], $type);
+            }
+        }
+
+        return $type;
     }
 
     /**
@@ -206,7 +230,6 @@ class QueryBuilder extends \yii\db\QueryBuilder
 
     /**
      * {@inheritdoc}
-     * @since 2.0.8
      */
     public function selectExists($rawSql)
     {
@@ -227,7 +250,7 @@ class QueryBuilder extends \yii\db\QueryBuilder
 
     /**
      * {@inheritdoc}
-     * @since 2.0.8
+     * @throws NotSupportedException
      */
     public function addCommentOnColumn($table, $column, $comment)
     {
@@ -236,7 +259,6 @@ class QueryBuilder extends \yii\db\QueryBuilder
 
     /**
      * {@inheritdoc}
-     * @since 2.0.8
      */
     public function addCommentOnTable($table, $comment)
     {
@@ -245,7 +267,7 @@ class QueryBuilder extends \yii\db\QueryBuilder
 
     /**
      * {@inheritdoc}
-     * @since 2.0.8
+     * @throws NotSupportedException
      */
     public function dropCommentFromColumn($table, $column)
     {
@@ -254,10 +276,28 @@ class QueryBuilder extends \yii\db\QueryBuilder
 
     /**
      * {@inheritdoc}
-     * @since 2.0.8
+     * @throws NotSupportedException
      */
     public function dropCommentFromTable($table)
     {
         throw new NotSupportedException('Tarantool doesn\'t support comments');
+    }
+
+    /**
+     * {@inheritdoc}
+     * @throws NotSupportedException
+     */
+    public function dropColumn($table, $column)
+    {
+        throw new NotSupportedException("Tarantool doesn't support dropping columns");
+    }
+
+    /**
+     * {@inheritdoc}
+     * @throws NotSupportedException
+     */
+    public function renameColumn($table, $oldName, $newName)
+    {
+        throw new NotSupportedException("Tarantool doesn't support renaming columns");
     }
 }

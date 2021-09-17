@@ -12,7 +12,7 @@ use yii\base\InvalidCallException;
 use yii\base\NotSupportedException;
 use yii\db\CheckConstraint;
 use yii\db\ColumnSchema;
-use yii\db\ColumnSchemaBuilder;
+use mhthnz\tarantool\ColumnSchemaBuilder;
 use yii\db\Constraint;
 use yii\db\ConstraintFinderInterface;
 use yii\db\ConstraintFinderTrait;
@@ -46,6 +46,9 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
      */
     const TYPE_SCALAR = 'scalar';
 
+    /**
+     * {@inheritdoc}
+     */
     public $columnSchemaClass = 'mhthnz\tarantool\ColumnSchema';
 
     /**

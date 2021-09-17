@@ -370,10 +370,28 @@ class Command extends \yii\db\Command
 
     /**
      * {@inheritdoc}
+     * @throws NotSupportedException
      */
     public function alterColumn($table, $column, $type)
     {
         throw new NotSupportedException("Tarantool doesn't support changing column definition");
+    }
+
+    /**
+     * {@inheritdoc}
+     * @throws NotSupportedException
+     */
+    public function dropColumn($table, $column)
+    {
+        throw new NotSupportedException("Tarantool doesn't support dropping columns");
+    }
+    /**
+     * {@inheritdoc}
+     * @throws NotSupportedException
+     */
+    public function renameColumn($table, $oldName, $newName)
+    {
+        throw new NotSupportedException("Tarantool doesn't support renaming columns");
     }
 
     /**

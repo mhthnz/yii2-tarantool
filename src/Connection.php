@@ -21,7 +21,7 @@ use yii\base\NotSupportedException;
 use yii\caching\CacheInterface;
 
 /**
- * Connection represents a connection to a [Tarantool database](https://docs.tarantool.io/ru/doc/2.4/singlehtml.html).
+ * Connection represents a connection to a [Tarantool database](https://docs.tarantool.io/en/doc/2.4/singlehtml.html).
  *
  * Connection works together with [[Command]], [[DataReader]].
  *
@@ -53,7 +53,7 @@ use yii\caching\CacheInterface;
  * to prevent SQL injection attacks. The following is an example:
  *
  * ```php
- * $command = $connection->createCommand('SELECT * FROM post WHERE id=:id');
+ * $command = $connection->createCommand('SELECT * FROM "post" WHERE "id"=:id');
  * $command->bindValue(':id', $_GET['id']);
  * $post = $command->query();
  * ```
@@ -77,7 +77,7 @@ use yii\caching\CacheInterface;
  * the sequence object. This property is read-only.
  * @property-read Connection $master The currently active master connection. `null` is returned if there is no
  * master available. This property is read-only.
- * @property-read Client $masterClient The PDO instance for the currently active master connection. This property is
+ * @property-read Client $masterClient The tarantool client instance for the currently active master connection. This property is
  * read-only.
  * @property QueryBuilder $queryBuilder The query builder for the current DB connection. Note that the type of
  * this property differs in getter and setter. See [[getQueryBuilder()]] and [[setQueryBuilder()]] for details.
@@ -86,7 +86,7 @@ use yii\caching\CacheInterface;
  * @property-read string $serverVersion Server version as a string. This property is read-only.
  * @property-read Connection $slave The currently active slave connection. `null` is returned if there is no
  * slave available and `$fallbackToMaster` is false. This property is read-only.
- * @property-read Client $slaveClient The PDO instance for the currently active slave connection. `null` is returned
+ * @property-read Client $slaveClient The tarantool client instance for the currently active slave connection. `null` is returned
  * if no slave connection is available and `$fallbackToMaster` is false. This property is read-only.
  *
  * @author mhthnz <mhthnz@gmail.com>
@@ -222,12 +222,7 @@ class Connection extends Component
      *
      * ```php
      * [
-     *     'username' => 'slave',
-     *     'password' => 'slave',
-     *     'attributes' => [
-     *         // use a smaller connection timeout
-     *         PDO::ATTR_TIMEOUT => 10,
-     *     ],
+     *      'dsn' => 'tcp://username:password@localhost:3301'
      * ]
      * ```
      */
@@ -237,7 +232,7 @@ class Connection extends Component
      * @var array list of master connection configurations. Each configuration is used to create a master DB connection.
      * When [[open()]] is called, one of these configurations will be chosen and used to create a DB connection
      * which will be used by this object.
-     * Note that when this property is not empty, the connection setting (e.g. "dsn", "username") of this object will
+     * Note that when this property is not empty, the connection setting (e.g. "dsn") of this object will
      * be ignored.
      * @see masterConfig
      * @see shuffleMasters
@@ -250,12 +245,7 @@ class Connection extends Component
      *
      * ```php
      * [
-     *     'username' => 'master',
-     *     'password' => 'master',
-     *     'attributes' => [
-     *         // use a smaller connection timeout
-     *         PDO::ATTR_TIMEOUT => 10,
-     *     ],
+     *      'dsn' => 'tcp://username:password@localhost:3301'
      * ]
      * ```
      */
@@ -263,7 +253,6 @@ class Connection extends Component
 
     /**
      * @var bool whether to shuffle [[masters]] before getting one.
-     * @since 2.0.11
      * @see masters
      */
     public $shuffleMasters = true;
@@ -272,7 +261,6 @@ class Connection extends Component
      * @var bool whether to enable logging of database queries. Defaults to true.
      * You may want to disable this option in a production environment to gain performance
      * if you do not need the information being logged.
-     * @since 2.0.12
      * @see enableProfiling
      */
     public $enableLogging = true;
@@ -281,7 +269,6 @@ class Connection extends Component
      * @var bool whether to enable profiling of opening database connection and database queries. Defaults to true.
      * You may want to disable this option in a production environment to gain performance
      * if you do not need the information being logged.
-     * @since 2.0.12
      * @see enableLogging
      */
     public $enableProfiling = true;
@@ -691,9 +678,8 @@ class Connection extends Component
 
     /**
      * Returns the ID of the last inserted row or sequence value.
-     * @param string $sequenceName name of the sequence object (required by some DBMS)
-     * @return string the row ID of the last row inserted, or the last value retrieved from the sequence object
-     * @see https://secure.php.net/manual/en/pdo.lastinsertid.php
+     * @param string $sequenceName doesn't work for now
+     * @return int|null the row ID of the last row inserted, or the last value retrieved from the sequence object
      */
     public function getLastInsertID($sequenceName = '')
     {
@@ -713,7 +699,6 @@ class Connection extends Component
      * Note that if the parameter is not a string, it will be returned without change.
      * @param string $value string to be quoted
      * @return string the properly quoted string
-     * @see https://secure.php.net/manual/en/pdo.quote.php
      */
     public function quoteValue($value)
     {
@@ -788,11 +773,11 @@ class Connection extends Component
     }
 
     /**
-     * Returns the PDO instance for the currently active slave connection.
-     * When [[enableSlaves]] is true, one of the slaves will be used for read queries, and its PDO instance
+     * Returns the tarantool client instance for the currently active slave connection.
+     * When [[enableSlaves]] is true, one of the slaves will be used for read queries, and its tarantool client instance
      * will be returned by this method.
-     * @param bool $fallbackToMaster whether to return a master PDO in case none of the slave connections is available.
-     * @return Client the PDO instance for the currently active slave connection. `null` is returned if no slave connection
+     * @param bool $fallbackToMaster whether to return a master tarantool client in case none of the slave connections is available.
+     * @return Client the tarantool client instance for the currently active slave connection. `null` is returned if no slave connection
      * is available and `$fallbackToMaster` is false.
      */
     public function getSlaveClient($fallbackToMaster = true)
@@ -806,9 +791,9 @@ class Connection extends Component
     }
 
     /**
-     * Returns the PDO instance for the currently active master connection.
-     * This method will open the master DB connection and then return [[pdo]].
-     * @return Client the PDO instance for the currently active master connection.
+     * Returns the tarantool client instance for the currently active master connection.
+     * This method will open the master DB connection and then return.
+     * @return Client the tarantool client instance for the currently active master connection.
      */
     public function getMasterClient()
     {

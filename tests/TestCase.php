@@ -120,6 +120,9 @@ class TestCase extends \PHPUnit\Framework\TestCase
             if (\Yii::$app->has('db', true)) {
                 Yii::$app->db->close();
             }
+            if (\Yii::$app->has('tarantool', true)) {
+                Yii::$app->tarantool->close();
+            }
         }
         Yii::$app = null;
         Yii::$container = new Container();
