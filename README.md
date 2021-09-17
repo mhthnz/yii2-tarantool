@@ -41,6 +41,7 @@ Configuration
 * [Dsn options](https://github.com/tarantool-php/client#dsn-string)
 ```php
 return [
+    'bootstrap' => ['debug'],
     'components' => [
         // Tarantool connection setup
         'tarantool' => [
@@ -49,9 +50,6 @@ return [
         ],
         
     ],
-    
-    'bootstrap' => ['debug'],
-    
     'modules' => [
         //Debug panel setup
         'debug' => [
@@ -64,7 +62,6 @@ return [
             ],
             'allowedIPs' => ['127.0.0.1', '::1'],
         ],
-        
     ],
 ];
 ```
@@ -77,10 +74,10 @@ Features
 * Model validators `UniqueValidator`, `ExistsValidator`
 * Data widgets like `DetailView`, `ListView`, `GridView` using `ActiveDataProvider`
 * Debug panel with explain
+*  [Migrations](docs/MIGRATIONS.md)
 
 Future plans
 ------------
-* Migrations
 * Nosql query builder
 * Lua validator
 * I18n source

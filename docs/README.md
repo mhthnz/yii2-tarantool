@@ -1,5 +1,4 @@
 Docs
 ======================================
 
-Coming soon...
-------------
+* [Setting up and usage migrations](MIGRATIONS.md)
