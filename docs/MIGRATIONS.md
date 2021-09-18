@@ -97,7 +97,7 @@ class m150101_185401_create_tables extends Migration
     {
     	// Primary key with autoincrement 'id'
         $this->createTable('table', [
-            'id' => $this->addPrimaryKey(), // Synonym \\mhthnz\\tarantool\\Schema::TYPE_PK
+            'id' => $this->primaryKey(), // Synonym \\mhthnz\\tarantool\\Schema::TYPE_PK
             'name' => $this->string()->collation('unicode'),
             'time' => $this->integer()->notNull(),
             'binarySecret' => $this->binary()->notNull(),
@@ -107,20 +107,21 @@ class m150101_185401_create_tables extends Migration
         // Composite primary key
         // Will create PRIMARY KEY ('id', 'time')
         $this->createTable('table1', [
-            'id' => $this->integer()->addPrimaryKey(),
+            'id' => $this->integer(),
             'name' => $this->string()->collation('unicode'),
-            'time' => $this->integer()->addPrimaryKey(),
+            'time' => $this->integer(),
             'binarySecret' => $this->binary()->notNull(),
             'balance' => $this->double()->notNull(),
+            'CONSTRAINT "pk1-t1" PRIMARY KEY ("id", "time")',
         ]);
         
         // Unique and check
         // Unique emails that match gmail.com
         $this->createTable('table2', [
-            'id' => $this->addPrimaryKey(),
+            'id' => $this->primaryKey(),
             'name' => $this->string()->collation('unicode'),
-            'time' => $this->integer()->null()),
-            'email' => $this->string()->unique()->check('"email" like \'%gmail.com\'') 
+            'time' => $this->integer()->null(),
+            'email' => $this->string()->unique()->check('"email" like \'%gmail.com\'') ,
             'balance' => $this->double()->notNull(),
         ]);
         
@@ -128,8 +129,8 @@ class m150101_185401_create_tables extends Migration
         $this->createTable('table3', [
             'id' => $this->integer(),
             'name' => $this->string()->collation('unicode'),
-            'time' => $this->integer()->null()),
-            'email' => $this->string()->unique()->check('"email" like \'%gmail.com\'') 
+            'time' => $this->integer()->null(),
+            'email' => $this->string()->unique()->check('"email" like \'%gmail.com\''),
             'balance' => $this->double()->notNull(),
             'table2_id' => $this->integer(),
             'CONSTRAINT "pk1" PRIMARY KEY ("id")',
@@ -138,13 +139,13 @@ class m150101_185401_create_tables extends Migration
         
         // Create memtx engine table
         $this->createMemtxTable('table4', [
-            'id' => $this->addPrimaryKey(),
+            'id' => $this->primaryKey(),
             'name' => $this->string()->collation('unicode'),
         ]);
         
         // Create vinyl engine table
         $this->createVinylTable('table5', [
-            'id' => $this->addPrimaryKey(),
+            'id' => $this->primaryKey(),
             'name' => $this->string()->collation('unicode'),
         ]);
         
@@ -158,7 +159,7 @@ class m150101_185401_create_tables extends Migration
         $this->insert('table4', ['name' => 'my_name', 'id' => 11]);
         $this->update('table4', ['name' => 'new_name'], ['id' => 11]);
         $this->batchInsert('table4', ['name', 'id'], [
-        	['name1', 1231231111], 
+            ['name1', 1231231111], 
             ['name2', 2], 
             ['name3', 9], 
             ['name4', 9999]
@@ -172,7 +173,7 @@ class m150101_185401_create_tables extends Migration
         $this->addPrimaryKey('pk_new', 'table3', ['id', 'table2_id']);
         
         // Add column (only tarantool ver >= 2.7)
-        $this->addColumn('table4', 'new_col', $this->binary()->notNull()->check('length("new_col") > 1'))
+        $this->addColumn('table4', 'new_col', $this->binary()->notNull()->check('length("new_col") > 1'));
         
         // Add/Drop foreign key
         $this->dropForeignKey('FK_table2_table3', 'table3');
@@ -185,6 +186,9 @@ class m150101_185401_create_tables extends Migration
         // Add/Drop index
         $this->createIndex('table4-name-unique', 'table4', ['name']);
         $this->dropIndex('table4-name-unique', 'table4');
+        
+        // Any sql code execution
+        $this->execute('INSERT INTO "table4"("name") VALUES (\'my name\')');
     }
 
     public function down()

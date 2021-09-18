@@ -48,7 +48,6 @@ return [
             'class' => \mhthnz\tarantool\Connection::class,
             'dsn' => 'tcp://username:password@localhost:3301/?connect_timeout=5&max_retries=3',
         ],
-        
     ],
     'modules' => [
         //Debug panel setup
