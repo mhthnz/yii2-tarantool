@@ -185,12 +185,12 @@ class ClientTest extends TestCase
         return[
             [
                 function() {
-                    return Client::fromDsn($this->getDsn() . '/?persistent=false');
+                    return Client::fromDsn($this->getParsedDsn('/?persistent=false'));
                 }
             ],
             [
                 function() {
-                    return Client::fromDsn($this->getDsn() . '/?persistent=false', new PurePacker(
+                    return Client::fromDsn($this->getParsedDsn('/?persistent=false'), new PurePacker(
                         new Packer(PackOptions::FORCE_STR, []),
                         new BufferUnpacker('', UnpackOptions::BIGINT_AS_DEC, [])
                     ));
@@ -198,7 +198,7 @@ class ClientTest extends TestCase
             ],
             [
                 function() {
-                    return Client::fromDsn($this->getDsn() . '/?persistent=false', new PurePacker(
+                    return Client::fromDsn($this->getParsedDsn('/?persistent=false'), new PurePacker(
                         new Packer(PackOptions::FORCE_STR, [new BinTransformer()]),
                         new BufferUnpacker('', UnpackOptions::BIGINT_AS_DEC, [new ErrorExtension()])
                     ))->withMiddleware(new LastInsertIDMiddleware($this->getDb()));

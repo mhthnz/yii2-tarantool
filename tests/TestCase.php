@@ -388,4 +388,9 @@ class TestCase extends \PHPUnit\Framework\TestCase
             }
         }
     }
+
+    public function getParsedDsn(string $params)
+    {
+        return preg_replace('/(?<!tcp:)\/\//', '/', $this->getDsn() . $params);
+    }
 }
