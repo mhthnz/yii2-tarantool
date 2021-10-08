@@ -323,4 +323,69 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->getDb()->createCommand('INSERT INTO "order_item_with_null_fk" ("order_id", "item_id", "quantity", "subtotal") VALUES (3, 2, 1, 40.0);')->execute();
 
     }
+
+    public function makeSpaceForCmd()
+    {
+        $format = [
+            ['name' => 'id', 'type' => 'unsigned', 'is_nullable' => false],
+            ['name' => 'name', 'type' => 'string', 'is_nullable' => false],
+            ['name' => 'field', 'type' => 'integer', 'is_nullable' => true],
+            ['name' => 'field1', 'type' => 'integer', 'is_nullable' => true],
+        ];
+
+        $this->getConnection()->createNosqlCommand()->createSpace('myspace', $format, 'memtx', ['id' => 123])->execute();
+        $this->getConnection()->createNosqlCommand()->createIndex('myspace', 'pk', ['id' => 'unsigned'], true)->execute();
+        $this->getConnection()->createNosqlCommand()->createIndex('myspace', 'stringindex', ['name' => 'string'])->execute();
+        $this->getConnection()->createNosqlCommand()->createIndex('myspace', 'intindex', ['field' => 'integer'])->execute();
+        $this->getConnection()->createNosqlCommand()->createIndex('myspace', 'intcompositeindex', ['field' => 'integer', 'field1' => 'integer'])->execute();
+
+        $this->getConnection()->createNosqlCommand()->insert('myspace', [1, "text 1", 11, 13])->execute();
+        $this->getConnection()->createNosqlCommand()->insert('myspace', [2, "text 2", 11, 13])->execute();
+        $this->getConnection()->createNosqlCommand()->insert('myspace', [3, "text 22", 11, 14])->execute();
+        $this->getConnection()->createNosqlCommand()->insert('myspace', [4, "text 22", 12, 15])->execute();
+        $this->getConnection()->createNosqlCommand()->insert('myspace', [5, "text 22", 12, 14])->execute();
+        $this->getConnection()->createNosqlCommand()->insert('myspace', [6, "text 3", 12, 11])->execute();
+        $this->getConnection()->createNosqlCommand()->insert('myspace', [7, "text 22", 13, 0])->execute();
+        $this->getConnection()->createNosqlCommand()->insert('myspace', [8, "text 3", 15, 0])->execute();
+
+        return [
+            [1, "text 1", 11, 13],
+            [2, "text 2", 11, 13],
+            [3, "text 22", 11, 14],
+            [4, "text 22", 12, 15],
+            [5, "text 22", 12, 14],
+            [6, "text 3", 12, 11],
+            [7, "text 22", 13, 0],
+            [8, "text 3", 15, 0],
+        ];
+    }
+
+    /**
+     * @param string $space
+     * @return bool
+     */
+    public function spaceExists(string $space): bool
+    {
+        try {
+            $this->getConnection()->client->getSpace($space);
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * @param array $spaces
+     * @throws \Tarantool\Client\Exception\ClientException
+     * @throws \Throwable
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function dropSpacesIfExist(array $spaces)
+    {
+        foreach ($spaces as $space) {
+            if ($this->spaceExists($space)) {
+                $this->getConnection()->createNosqlCommand()->dropSpace($space)->execute();
+            }
+        }
+    }
 }

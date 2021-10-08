@@ -43,6 +43,7 @@ class TarantoolPanel extends DbPanel
 
         return $target->filterMessages($target->messages, Logger::LEVEL_PROFILE, [
             'mhthnz\tarantool\Command::*',
+            'mhthnz\tarantool\nosql\Command::*'
         ]);
     }
 

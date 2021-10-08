@@ -2,6 +2,7 @@
 
 namespace mhthnz\tarantool\tests;
 
+use mhthnz\tarantool\Client;
 use mhthnz\tarantool\tests\classes\AnyCaseValue;
 use mhthnz\tarantool\tests\classes\AnyValue;
 use mhthnz\tarantool\tests\classes\Customer;
@@ -103,5 +104,11 @@ class ConnectionTest extends TestCase
             ['findUniqueIndexes', [new \mhthnz\tarantool\TableSchema(['name' => 'customer'])]],
             ['getTableSchema', ['customer']],
         ];
+    }
+
+    public function testClient()
+    {
+        $client = $this->getDb()->getSlaveClient();
+        $this->assertInstanceOf(Client::class, $client);
     }
 }

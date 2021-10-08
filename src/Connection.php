@@ -8,16 +8,16 @@ use MessagePack\PackOptions;
 use MessagePack\TypeTransformer\BinTransformer;
 use MessagePack\TypeTransformer\CanPack;
 use MessagePack\UnpackOptions;
-use Tarantool\Client\Client;
+use mhthnz\tarantool\nosql\Query;
 use Tarantool\Client\Exception\ClientException;
 use Tarantool\Client\Packer\Extension\DecimalExtension;
 use Tarantool\Client\Packer\Extension\ErrorExtension;
 use Tarantool\Client\Packer\Extension\UuidExtension;
 use Tarantool\Client\Packer\PurePacker;
+use Tarantool\Client\Request\Request;
 use Yii;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 use yii\caching\CacheInterface;
 
 /**
@@ -106,9 +106,9 @@ class Connection extends Component
     public $dsn;
 
     /**
-     * @var string Tarantool client class, original class can not be inheritance, but you still can use decorator for some reason.
+     * @var string|null Tarantool client class, original class can not be inheritance, but you still can use decorator for some reason.
      */
-    public $clientClass = 'Tarantool\Client\Client';
+    public $clientClass;
 
     /**
      * @var Client
@@ -179,11 +179,6 @@ class Connection extends Component
      * @see enableQueryCache
      */
     public $queryCache = 'cache';
-
-    /**
-     * @var bool whether to enable [savepoint](https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_txn_management/savepoint/).
-     */
-    public $enableSavepoint = true;
 
     /**
      * @var CacheInterface|string|false the cache object or the ID of the cache application component that is used to store
@@ -284,6 +279,18 @@ class Connection extends Component
     public $instanceUuid;
 
     /**
+     * Automatically resolve `unsupported lua type` using eval.
+     * Tarantool user must have eval right or to avoid encoding problems you can manually set in tarantool config:
+     * msgpack = require('msgpack');
+     * msgpack.cfg{encode_invalid_as_nil = true}
+     *
+     * @see https://www.tarantool.io/en/doc/latest/reference/reference_lua/net_box/#lua-function.conn.call
+     *
+     * @var bool
+     */
+    public $handleLuaEncodingErrors = true;
+
+    /**
      * Store last insert id.
      * @var int|null
      */
@@ -335,6 +342,14 @@ class Connection extends Component
     public function getIsActive()
     {
         return $this->client !== null;
+    }
+
+    /**
+     * @return Query
+     */
+    public function createNosqlQuery(): Query
+    {
+        return new Query(['db' => $this]);
     }
 
     /**
@@ -463,6 +478,18 @@ class Connection extends Component
     }
 
     /**
+     * Flush sql schema and nosql space cache.
+     * @return void
+     */
+    public function flushSchema()
+    {
+        $this->client->flushSpaces();
+        if ($this->_schema !== null) {
+            $this->_schema->refresh();
+        }
+    }
+
+    /**
      * Establishes a DB connection.
      * It does nothing if a DB connection has already been established.
      * @throws \Exception if connection fails
@@ -552,7 +579,7 @@ class Connection extends Component
     {
         $clientClass = $this->clientClass;
         if ($clientClass === null) {
-            $clientClass = 'Tarantool\Client\Client';
+            $clientClass = 'mhthnz\tarantool\Client';
         }
         return $clientClass::fromDsn($this->dsn, $this->getPacker([new BinTransformer()]))
             ->withMiddleware(new LastInsertIDMiddleware($this));
@@ -604,12 +631,37 @@ class Connection extends Component
      */
     public function createCommand($sql = null, $params = [])
     {
-        $config = ['class' => 'mhthnz\tarantool\Command'];
-        $config['db'] = $this;
-        $config['sql'] = $sql;
+        $config = [
+            'class' => 'mhthnz\tarantool\Command',
+            'db' => $this,
+            'sql' => $sql,
+        ];
         /** @var Command $command */
         $command = Yii::createObject($config);
         return $command->bindValues($params);
+    }
+
+    /**
+     * Create nosql command.
+     * @param Request|null $request
+     * @param array $params the parameters to be bound to the request
+     * @return \mhthnz\tarantool\nosql\Command the DB command
+     * @throws InvalidConfigException
+     */
+    public function createNosqlCommand(?Request $request = null)
+    {
+        $config = [
+            'class' => 'mhthnz\tarantool\nosql\Command',
+            'db' => $this,
+        ];
+
+        /** @var \mhthnz\tarantool\nosql\Command $command */
+        $command = Yii::createObject($config);
+        if ($request !== null) {
+            $command->setRequest($request);
+        }
+
+        return $command;
     }
 
     /**

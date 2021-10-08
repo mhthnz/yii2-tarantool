@@ -67,17 +67,17 @@ return [
 
 Features
 ------------
-* Tarantool `Connection` has `Command` and `QueryBuilder`
+* Tarantool [`Connection`](docs/CONNECTION.md) has `Command` and `QueryBuilder`
 * `ActiveRecord` models with `ActiveQuery` support
 * `Schema` abstraction, `TableSchema` and `ColumnSchema`
 * Model validators `UniqueValidator`, `ExistsValidator`
 * Data widgets like `DetailView`, `ListView`, `GridView` using `ActiveDataProvider`
 * Debug panel with explain
-*  [Migrations](docs/MIGRATIONS.md)
+* [Migrations](docs/MIGRATIONS.md)
+* [Nosql `Query` and `Command` for performing nosql requests](docs/NOSQL.md)
 
 Future plans
 ------------
-* Nosql query builder
 * Lua validator
 * I18n source
 * Rbac db source
