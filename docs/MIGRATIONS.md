@@ -10,7 +10,6 @@ In many aspects it works like standard [yii2 migrations](https://www.yiiframewor
 * Restricted some methods such as: `DropColumn()`, `renameColumn()`... because of tarantool doesn't support it for now
 * Reduced amount of column types (`string`, `integer`, `double`, `binary`)
 * Added addition methods for creating tables with engine (`memtx`, `vinyl`)
-* Added ability for creating composite primary key (ColumnSchemaBuilder)
 * No transaction support (only `up()` and `down()`)
 * Supports check and unique constraints
 
