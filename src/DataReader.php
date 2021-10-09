@@ -47,7 +47,7 @@ class DataReader extends \yii\base\BaseObject implements \Iterator, \Countable
      * TODO: Implement later...
      * @param $column
      * @param $value
-     * @param null $dataType
+     * @param string|null $dataType
      */
     public function bindColumn($column, &$value, $dataType = null)
     {

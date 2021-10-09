@@ -10,6 +10,7 @@ namespace mhthnz\tarantool;
 use Yii;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\db\ActiveQueryInterface;
 use yii\db\BaseActiveRecord;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
@@ -153,7 +154,7 @@ class ActiveRecord extends BaseActiveRecord
      * Finds ActiveRecord instance(s) by the given condition.
      * This method is internally called by [[findOne()]] and [[findAll()]].
      * @param mixed $condition please refer to [[findOne()]] for the explanation of this parameter
-     * @return ActiveQueryInterface the newly created [[ActiveQueryInterface|ActiveQuery]] instance.
+     * @return ActiveQueryInterface|ActiveQuery the newly created [[ActiveQueryInterface|ActiveQuery]] instance.
      * @throws InvalidConfigException if there is no primary key defined.
      * @internal
      */

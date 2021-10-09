@@ -204,7 +204,7 @@ class Command extends \yii\db\Command
     }
 
     /**
-     * @param null $forRead
+     * @param bool|null $forRead
      * @throws \Exception
      */
     public function prepare($forRead = null)
@@ -231,7 +231,7 @@ class Command extends \yii\db\Command
             throw new \Exception($message, (int) $e->getCode(), $e);
         } catch (\Throwable $e) {
             $message = $e->getMessage() . "\nFailed to prepare SQL: $sql";
-            throw new \Exception($message, null, (int) $e->getCode(), $e);
+            throw new \Exception($message, (int) $e->getCode(), $e);
         }
     }
 

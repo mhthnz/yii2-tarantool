@@ -8,19 +8,16 @@
 namespace mhthnz\tarantool;
 
 use Tarantool\Client\Exception\ClientException;
-use yii\base\InvalidCallException;
+use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\db\CheckConstraint;
-use yii\db\ColumnSchema;
-use mhthnz\tarantool\ColumnSchemaBuilder;
 use yii\db\Constraint;
 use yii\db\ConstraintFinderInterface;
 use yii\db\ConstraintFinderTrait;
-use yii\db\Expression;
 use yii\db\ForeignKeyConstraint;
 use yii\db\IndexConstraint;
-use yii\db\Transaction;
 use yii\helpers\ArrayHelper;
+use Yii;
 
 /**
  * Schema is the class for retrieving metadata from a Tarantool database ver. >= 2.4.1
@@ -395,6 +392,16 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
         return $result;
     }
 
+    /**
+     * Creates a column schema for the database.
+     * This method may be overridden by child classes to create a DBMS-specific column schema.
+     * @return ColumnSchema column schema instance.
+     * @throws InvalidConfigException if a column schema class cannot be created.
+     */
+    protected function createColumnSchema()
+    {
+        return Yii::createObject($this->columnSchemaClass);
+    }
 
     /**
      * Loads the column information into a [[ColumnSchema]] object.
@@ -402,7 +409,7 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
      * array(4) { ["name"]=> string(7) "columnname" ["type"]=> string(6) "string" ["is_nullable"]=> bool(true) ["nullable_action"]=> string(4) "none" }
      * or
      *{ ["name"]=> string(8) "columnname" ["type"]=> string(6) "string" }
-     * @return \yii\db\ColumnSchema the column schema object
+     * @return ColumnSchema the column schema object
      */
     protected function loadColumnSchema($info)
     {
@@ -415,7 +422,7 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
         $val = isset($info['default']) ? $info['default'] : null;
 
         // I got 'defaultValue' instead of just defaultValue string
-        if (($info['type'] === Schema::TYPE_STRING || $info['type'] === Schema::TYPE_TEXT || $info['type'] === Schema::TYPE_CHAR) && ($strlen = strlen($val)) >= 2) {
+        if (($info['type'] === Schema::TYPE_STRING || $info['type'] === Schema::TYPE_TEXT || $info['type'] === Schema::TYPE_CHAR) && ($strlen = strlen(/** @scrutinizer ignore-type */ $val)) >= 2) {
             if ($val[0] === "'" && $val[$strlen - 1] === "'") {
                 $val = substr($val, 1, $strlen - 2);
             }

@@ -78,28 +78,11 @@ class Migration extends Component implements MigrationInterface
     /**
      * This method contains the logic to be executed when applying this migration.
      * Child classes may override this method to provide actual migration logic.
-     * @return bool return a false value to indicate the migration fails
+     * @return bool|null return a false value to indicate the migration fails
      * and should not proceed further. All other return values mean the migration succeeds.
      */
     public function up()
     {
-        $transaction = $this->db->beginTransaction();
-        try {
-            if ($this->safeUp() === false) {
-                $transaction->rollBack();
-                return false;
-            }
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $this->printException($e);
-            $transaction->rollBack();
-            return false;
-        } catch (\Throwable $e) {
-            $this->printException($e);
-            $transaction->rollBack();
-            return false;
-        }
-
         return null;
     }
 
@@ -107,28 +90,11 @@ class Migration extends Component implements MigrationInterface
      * This method contains the logic to be executed when removing this migration.
      * The default implementation throws an exception indicating the migration cannot be removed.
      * Child classes may override this method if the corresponding migrations can be removed.
-     * @return bool return a false value to indicate the migration fails
+     * @return bool|null return a false value to indicate the migration fails
      * and should not proceed further. All other return values mean the migration succeeds.
      */
     public function down()
     {
-        $transaction = $this->db->beginTransaction();
-        try {
-            if ($this->safeDown() === false) {
-                $transaction->rollBack();
-                return false;
-            }
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $this->printException($e);
-            $transaction->rollBack();
-            return false;
-        } catch (\Throwable $e) {
-            $this->printException($e);
-            $transaction->rollBack();
-            return false;
-        }
-
         return null;
     }
 

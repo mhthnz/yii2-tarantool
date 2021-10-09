@@ -870,7 +870,7 @@ class Connection extends Component
             $this->_slave = $this->openFromPool($this->slaves, $this->slaveConfig);
         }
 
-        return $this->_slave === null && $fallbackToMaster ? $this : $this->_slave;
+        return !$this->_slave && $fallbackToMaster ? $this : $this->_slave;
     }
 
     /**
