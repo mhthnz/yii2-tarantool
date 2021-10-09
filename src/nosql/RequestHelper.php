@@ -221,7 +221,7 @@ class RequestHelper
             $i = 0;
             foreach ($args as $key => $value) {
                 $assoc = null;
-                if ($key != (int) $key) {
+                if (!is_int($key)) {
                     $assoc = $key . ' = ';
                 }
                 $result .= $assoc . self::buildArgs($value) . ($i !== $max ? ', ' : null);
