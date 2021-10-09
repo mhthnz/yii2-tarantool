@@ -70,8 +70,8 @@ Features
 * Tarantool [`Connection`](docs/CONNECTION.md) has `Command` and `QueryBuilder`
 * `ActiveRecord` models with `ActiveQuery` support
 * `Schema` abstraction, `TableSchema` and `ColumnSchema`
-* Model validators `UniqueValidator`, `ExistsValidator`
-* Data widgets like `DetailView`, `ListView`, `GridView` using `ActiveDataProvider`
+* Compatible with AR validators `UniqueValidator`, `ExistsValidator`
+* Supports data widgets like `DetailView`, `ListView`, `GridView` using `ActiveDataProvider`
 * Debug panel with explain is able to show SQL and NoSQL requests.
 * [Migrations](docs/MIGRATIONS.md)
 * [Nosql `Query` and `Command` for performing nosql requests](docs/NOSQL.md)

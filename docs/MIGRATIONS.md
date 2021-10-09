@@ -25,6 +25,7 @@ return [
             'class'         => \mhthnz\tarantool\console\MigrateController::class,
             'migrationPath' => '@app/tarantool/migrations', // Migrations directory
             // 'db'         => 'tarantool', // Connection component key default 'tarantool'
+            // 'migrationTable' => 'migration' // Migration table `migration` by default
         ],
     ]
 ];
