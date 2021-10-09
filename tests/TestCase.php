@@ -367,6 +367,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     public function spaceExists(string $space): bool
     {
         try {
+            $this->getConnection()->flushSchema();
             $this->getConnection()->client->getSpace($space);
             return true;
         } catch (\Throwable $e) {

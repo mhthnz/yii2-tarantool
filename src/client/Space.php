@@ -197,7 +197,7 @@ class Space implements SpaceInterface
         }
         $schema = new self($this->handler, self::VINDEX_ID, '_vindex');
         $data = $schema->select(Criteria::key([$this->id, $name])->andIndex(self::VINDEX_NAME_INDEX));
-        if ($data) {
+        if (!empty($data)) {
             return $this->indexes[$name] = $data[0][1];
         }
 
@@ -218,7 +218,7 @@ class Space implements SpaceInterface
         }
         $schema = new self($this->handler, self::VINDEX_ID, '_vindex');
         $data = $schema->select(Criteria::key([$this->id, $id])->andIndex(self::VINDEX_ID_INDEX));
-        if ($data) {
+        if (!empty($data)) {
             $this->indexes[$data[0][2]] = $id;
             return $data[0][2];
         }

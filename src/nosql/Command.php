@@ -312,7 +312,8 @@ class Command extends BaseObject
      */
     public function createIndex(string $space, string $indexName, array $fields, bool $unique = false, string $type = "tree")
     {
-        $spaceObj = $this->db->getMasterClient()->getSpace($space);
+        // keep this for validate space name for preventing vulnerabilities (like code injection)
+        $this->db->getMasterClient()->getSpace($space);
         $opts = [];
         foreach ($fields as $field => $definition) {
             $opts['parts'][] = ['field' => $field, 'type' => $definition];

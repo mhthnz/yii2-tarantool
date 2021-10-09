@@ -145,7 +145,7 @@ class RequestHelper
     /**
      * @param SelectRequest $request
      * @param Connection $db
-     * @param null $seed
+     * @param mixed $seed
      * @return CallRequest
      * @throws ClientException
      */

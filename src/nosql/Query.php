@@ -21,9 +21,9 @@ class Query extends BaseObject
 {
     /**
      * Space name.
-     * @var string|null
+     * @var string
      */
-    public $from;
+    public $from = '';
 
     /**
      * Condition for nosql command.

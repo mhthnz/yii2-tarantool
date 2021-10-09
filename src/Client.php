@@ -55,7 +55,7 @@ class Client
      * @param Handler|null $handler
      * @param \Tarantool\Client\Client|null $client
      */
-    public function __construct(?Handler $handler, ?\Tarantool\Client\Client $client)
+    public function __construct(Handler $handler, ?\Tarantool\Client\Client $client)
     {
         if ($client !== null) {
             $this->_client = $client;
@@ -72,7 +72,7 @@ class Client
     {
         $client = \Tarantool\Client\Client::fromDefaults();
 
-        return new self(null, $client);
+        return new self($client->getHandler(), $client);
     }
 
     /**
@@ -85,7 +85,7 @@ class Client
     {
         $client = \Tarantool\Client\Client::fromOptions($options, $packer);
 
-        return new self(null, $client);
+        return new self($client->getHandler(), $client);
     }
 
     /**
@@ -98,7 +98,7 @@ class Client
     {
         $client = \Tarantool\Client\Client::fromDsn($dsn, $packer);
 
-        return new self(null, $client);
+        return new self($client->getHandler(), $client);
     }
 
     /**
@@ -110,7 +110,7 @@ class Client
     {
         $client = clone $this->_client->withMiddleware(...$middleware);
 
-        return new self(null, $client);
+        return new self($client->getHandler(), $client);
     }
 
     /**
@@ -122,7 +122,7 @@ class Client
     {
         $client = clone $this->_client->withPrependedMiddleware(...$middleware);
 
-        return new self(null, $client);
+        return new self($client->getHandler(), $client);
     }
 
     /**
@@ -139,7 +139,7 @@ class Client
 
         $spaceId = $this->getSpaceIDByName($spaceName);
 
-        return $this->spaces[$spaceName] = $this->spaces[$spaceId] = new $this->spaceClass($this->_client->getHandler(), $spaceId, $spaceName);
+        return $this->_spaces[$spaceName] = $this->_spaces[$spaceId] = new $this->spaceClass($this->_client->getHandler(), $spaceId, $spaceName);
     }
 
     /**
@@ -157,7 +157,7 @@ class Client
         $schema = new Space($this->getHandler(), Space::VSPACE_ID, '_vspace');
         $data = $schema->select(Criteria::key([$spaceId])->andIndex(Space::VSPACE_ID_INDEX));
 
-        if (!$data) {
+        if (empty($data)) {
             throw RequestFailed::unknownSpace($spaceId);
         }
         $spaceName = $data[0][2];
@@ -175,7 +175,7 @@ class Client
         $schema = $this->getSpaceById(Space::VSPACE_ID);
         $data = $schema->select(Criteria::key([$spaceName])->andIndex(Space::VSPACE_NAME_INDEX));
 
-        if ($data) {
+        if (!empty($data)) {
             return $data[0][0];
         }
 
