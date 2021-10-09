@@ -53,14 +53,14 @@ class ConnectionTest extends TestCase
     {
         $c = Customer::findOne(1);
         $this->assertTrue($c instanceof Customer);
-        $this->assertEquals($c->id, 1);
+        $this->assertEquals(1, $c->id);
     }
 
     public function testOpenConnectAR1()
     {
         $c = new Customer();
         $c->loadDefaultValues();
-        $this->assertEquals($c->status, 0);
+        $this->assertEquals(0, $c->status);
     }
 
     /**

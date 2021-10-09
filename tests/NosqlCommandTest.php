@@ -3,13 +3,7 @@
 namespace mhthnz\tarantool\tests;
 
 use MessagePack\Type\Bin;
-use mhthnz\tarantool\Client;
-use mhthnz\tarantool\nosql\Query;
-use mhthnz\tarantool\tests\classes\AnyCaseValue;
-use mhthnz\tarantool\tests\classes\AnyValue;
-use mhthnz\tarantool\tests\classes\Customer;
 use mhthnz\tarantool\Connection;
-use Tarantool\Client\Keys;
 use Tarantool\Client\Request\CallRequest;
 use Tarantool\Client\Request\EvaluateRequest;
 use Tarantool\Client\Request\InsertRequest;
@@ -17,19 +11,9 @@ use Tarantool\Client\Request\ReplaceRequest;
 use Tarantool\Client\Request\SelectRequest;
 use Tarantool\Client\Request\UpdateRequest;
 use Tarantool\Client\Request\UpsertRequest;
-use Tarantool\Client\Schema\Criteria;
 use Tarantool\Client\Schema\IteratorTypes;
 use Tarantool\Client\Schema\Operations;
-use yii\caching\ArrayCache;
-use yii\caching\FileCache;
-use yii\db\CheckConstraint;
-use yii\db\ColumnSchema;
-use yii\db\Constraint;
-use yii\db\Expression;
-use yii\db\ForeignKeyConstraint;
-use yii\db\IndexConstraint;
-use mhthnz\tarantool\Schema;
-use yii\db\TableSchema;
+
 
 class NosqlCommandTest extends TestCase
 {
@@ -940,6 +924,15 @@ class NosqlCommandTest extends TestCase
         $this->assertEquals("EVAL return box.space.myspace:format()", $cmd->getStringRequest());
         $cmd = $this->getDb()->createNosqlCommand(new EvaluateRequest("return box.space.myspace:select(...)", [1]));
         $this->assertEquals("EVAL return box.space.myspace:select(...) | args: {1}", $cmd->getStringRequest());
+
+        // Test assoc params create table
+        $req = $this->getDb()->createNosqlCommand()->createSpace('space', [
+            ['name' => 'id', 'type' => 'unsigned', 'is_nullable' => false],
+            ['name' => 'name', 'type' => 'string', 'is_nullable' => true],
+            ['name' => 'date', 'type' => 'string', 'is_nullable' => false],
+            ['name' => 'counter', 'type' => 'unsigned', 'is_nullable' => false],
+        ], 'vinyl', ['id' => 123, 'temporary' => true])->getStringRequest();
+        $this->assertEquals("CALL box.schema.create_space({'space', {id = 123, temporary = true, format = {{name = 'id', type = 'unsigned', is_nullable = false}, {name = 'name', type = 'string', is_nullable = true}, {name = 'date', type = 'string', is_nullable = false}, {name = 'counter', type = 'unsigned', is_nullable = false}}, engine = 'vinyl'}})", $req);
     }
 
     public function testLuaEncodingErrorsAndRights()

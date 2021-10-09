@@ -112,7 +112,7 @@ class CommandTest extends TestCase
 
         // queryScalar
         $sql = 'SELECT * FROM {{customer}} ORDER BY [[id]]';
-        $this->assertEquals($db->createCommand($sql)->queryScalar(), 1);
+        $this->assertEquals(1, $db->createCommand($sql)->queryScalar());
 
         $sql = 'SELECT [[id]] FROM {{customer}} ORDER BY [[id]]';
         $command = $db->createCommand($sql);

@@ -218,8 +218,14 @@ class RequestHelper
             }
             $result = '{';
             $max = count($args) - 1;
-            foreach ($args as $i => $value) {
-                $result .= self::buildArgs($value) . ($i !== $max ? ', ' : null);
+            $i = 0;
+            foreach ($args as $key => $value) {
+                $assoc = null;
+                if ($key != (int) $key) {
+                    $assoc = $key . ' = ';
+                }
+                $result .= $assoc . self::buildArgs($value) . ($i !== $max ? ', ' : null);
+                $i++;
             }
             return $result . '}';
         }
@@ -241,6 +247,10 @@ class RequestHelper
                 return "'" . substr($args, 0, self::$MAX_STRING_LENGTH) . "...'";
             }
             return "'" . $args . "'";
+        }
+
+        if (is_bool($args)) {
+            return $args ? 'true' : 'false';
         }
 
         return $args;

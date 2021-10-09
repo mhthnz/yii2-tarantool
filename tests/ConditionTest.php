@@ -64,11 +64,11 @@ class ConditionTest extends TestCase
             ->groupBy("category_id");
 
         $result = $query->all($connection);
-        $this->assertEquals($result, [['category_id' => 1, 'count' => 2], ['category_id' => 2, 'count' => 3]]);
+        $this->assertEquals([['category_id' => 1, 'count' => 2], ['category_id' => 2, 'count' => 3]], $result);
 
         // having
         $result = $query->having(['>', 'category_id', 1])->all($connection);
-        $this->assertEquals($result, [['category_id' => 2, 'count' => 3]]);
+        $this->assertEquals([['category_id' => 2, 'count' => 3]], $result);
     }
 
     /**

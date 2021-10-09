@@ -443,15 +443,15 @@ class ActiveRecordTest extends TestCase
         $c->link('parent', $p1);
         $result = ParentAR::find()->joinWith('child')->orderBy(['child_table.id' => SORT_DESC])->all();
         $this->assertTrue($result[0] instanceof ParentAR && $result[1] instanceof ParentAR);
-        $this->assertEquals($result[0]->id, 2);
+        $this->assertEquals(2, $result[0]->id);
         $this->assertTrue($result[0]->isRelationPopulated('child'));
         $this->assertTrue($result[0]->child[0] instanceof ChildAR);
-        $this->assertEquals($result[0]->child[0]->id, 4);
-        $this->assertEquals($result[1]->id, 1);
+        $this->assertEquals(4, $result[0]->child[0]->id);
+        $this->assertEquals(1, $result[1]->id);
         $this->assertTrue($result[1]->isRelationPopulated('child'));
         $this->assertTrue($result[1]->child[0] instanceof ChildAR && $result[1]->child[1] instanceof ChildAR);
-        $this->assertEquals($result[1]->child[0]->id, 1);
-        $this->assertEquals($result[1]->child[1]->id, 3);
+        $this->assertEquals(1, $result[1]->child[0]->id);
+        $this->assertEquals(3, $result[1]->child[1]->id);
 
         // Inner join with
         $result = ParentAR::find()->innerJoinWith(['child' => function ($query) {
