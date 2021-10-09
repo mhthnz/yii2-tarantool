@@ -74,7 +74,7 @@ Features
 * Supports data widgets like `DetailView`, `ListView`, `GridView` using `ActiveDataProvider`
 * Debug panel with explain is able to show SQL and NoSQL requests.
 * [Migrations](docs/MIGRATIONS.md)
-* [Nosql `Query` and `Command` for performing nosql requests](docs/NOSQL.md)
+* Nosql [`Query`](docs/NOSQL.md#query) and [`Command`](docs/NOSQL.md#command) [for performing nosql requests](docs/NOSQL.md)
 
 Future plans
 ------------

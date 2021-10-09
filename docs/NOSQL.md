@@ -129,8 +129,8 @@ $conn->createNosqlCommand()->call('os.date', $arg1)->execute()->queryScalar();
 // Day: thu
 
 // Evaluate lua code
-$conn->createNosqlCommand()->call('return box.info()')->execute()->queryAll();
-$conn->createNosqlCommand()->call('return os.date(...)', $arg1)->execute()->queryScalar();
+$conn->createNosqlCommand()->evaluate('return box.info()')->execute()->queryAll();
+$conn->createNosqlCommand()->evaluate('return os.date(...)', [$arg1])->execute()->queryScalar();
 // Day: thu
 
 // Some schema methods
