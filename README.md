@@ -75,10 +75,11 @@ Features
 * Debug panel with explain is able to show SQL and NoSQL requests.
 * [Migrations](docs/MIGRATIONS.md)
 * Nosql [`Query`](docs/NOSQL.md#query) and [`Command`](docs/NOSQL.md#command) [for performing nosql requests](docs/NOSQL.md)
+* [Lua validator](docs/LUA-VALIDATOR.md)
 
 Future plans
 ------------
-* Lua validator
+
 * I18n source
 * Rbac db source
 * Transactions
