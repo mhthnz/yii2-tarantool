@@ -30,15 +30,15 @@ For `yii\base\Model`, `yii\db\ActiveRecord`, `yii\base\DynamicModel` - `db` prop
 ```php
 function rules()
 {
-	return[
-    	['property', 'required'],
-        ['property', 'integer']
-    	['property', mhthnz\tarantool\LuaValidator::class, 'db' => 'tarantool', 'params' => ['greater' => 100], 'function' => <<<LUA
+	$lua = <<<LUA
 	function(value, params)
 		return box.space.myspace:get(value)[2] > params['greater']
 	end
-LUA
-]
+LUA;
+	return[
+    	['property', 'required'],
+        ['property', 'integer']
+    	['property', mhthnz\tarantool\LuaValidator::class, 'function' => $lua, 'params' => ['greater' => 100], 'db' => 'tarantool']
     ];
 }
 ```
