@@ -113,13 +113,12 @@ LUA;
         $model = new DynamicModel([
             'field1', 'field2'
         ]);
-
-        $model->addRule('field1', LuaValidator::class, ['params' => ['val' => 'text 2'], 'db' => 'tarantool', 'function' => <<<LUA
+        $lua = <<<LUA
             function (val, params) 
                 return box.space.myspace:get(val)[2] == params['val']
             end
-LUA,
-]);
+LUA;
+        $model->addRule('field1', LuaValidator::class, ['params' => ['val' => 'text 2'], 'db' => 'tarantool', 'function' => $lua]);
         $this->assertTrue($model->validate());
         $this->assertEmpty($model->getErrors());
 
@@ -135,12 +134,12 @@ LUA,
             'field1', 'field2'
         ]);
 
-        $model->addRule('field1', LuaValidator::class, ['skipOnEmpty' => false, 'params' => ['val' => 'text 2'], 'db' => 'tarantool', 'function' => <<<LUA
+        $lua = <<<LUA
             function (val, params) 
                 return box.space.myspace:get(val)[2] == params['val']
             end
-LUA,
-        ]);
+LUA;
+        $model->addRule('field1', LuaValidator::class, ['skipOnEmpty' => false, 'params' => ['val' => 'text 2'], 'db' => 'tarantool', 'function' => $lua]);
 
         $thrown = false;
         try {
@@ -169,13 +168,12 @@ LUA,
         $model->field2 = 1;
         $model->field1 = 1;
         $thrown = false;
-
-        $model->setLuaFunc(<<<LUA
+        $lua = <<<LUA
             function (val, params) 
                 return box.space.myspace:get(val)[2] == params['val']
             end
-LUA
-        );
+LUA;
+        $model->setLuaFunc($lua);
 
         try {
             $model->validate();
@@ -188,14 +186,12 @@ LUA
         $model = new LuaValidatorBaseModel();
         $model->field2 = 1;
         $model->field1 = 'test';
-        $thrown = false;
-
-        $model->setLuaFunc(<<<LUA
+        $lua = <<<LUA
             function (val, params) 
                 return box.space.myspace:get(val)[2] == params['field1']
             end
-LUA
-        );
+LUA;
+        $model->setLuaFunc($lua);
         $model->setDB($this->getDb());
         $this->assertFalse($model->validate());
         $this->assertEquals(['field2' => ['Field2 is not valid.']], $model->getErrors());
@@ -208,17 +204,16 @@ LUA
 
     public function testActiveRecord()
     {
-
+        $lua = <<<LUA
+            function (value, params)
+                return os.time() > value
+            end
+LUA;
         $rules = [
             ['id', 'required'],
             ['id', 'integer'],
             ['field', 'integer'],
-            ['field1', LuaValidator::class, 'function' => <<<LUA
-            function (value, params)
-                return os.time() > value
-            end
-LUA
-],
+            ['field1', LuaValidator::class, 'function' => $lua],
         ];
         $model = new LuaValidatorActiveRecord(['rules' => $rules]);
         $model->setAttributes([
@@ -235,16 +230,17 @@ LUA
         $this->assertFalse($model->validate());
         $this->assertEquals(['field1' => ['Field1 is not valid.']], $model->getErrors());
 
+        $lua = <<<LUA
+            function (value, params)
+                return os.time()
+            end
+LUA;
+
         $rules = [
             ['id', 'required'],
             ['id', 'integer'],
             ['field', 'integer'],
-            ['field1', LuaValidator::class, 'function' => <<<LUA
-            function (value, params)
-                return os.time()
-            end
-LUA
-            ],
+            ['field1', LuaValidator::class, 'function' => $lua],
             ];
         $model = new LuaValidatorActiveRecord(['rules' => $rules]);
         $model->setAttributes([
