@@ -213,40 +213,17 @@ class RequestHelper
     {
         // Process array key
         if (is_array($args)) {
-            if (!count($args)) {
-                return '';
-            }
-            $result = '{';
-            $max = count($args) - 1;
-            $i = 0;
-            foreach ($args as $key => $value) {
-                $assoc = null;
-                if (!is_int($key)) {
-                    $assoc = $key . ' = ';
-                }
-                $result .= $assoc . self::buildArgs($value) . ($i !== $max ? ', ' : null);
-                $i++;
-            }
-            return $result . '}';
+            return static::buildArray($args);
         }
 
         // Trying to convert objects to scalar
         if (is_object($args)) {
-            if ($args instanceof Bin) {
-                return '[Binary]';
-            }
-            if (method_exists($args, '__toString')) {
-                return "'" . self::buildArgs((string)$args) . "'";
-            }
-            return '[OBJECT]';
+            return static::buildObject($args);
         }
 
         // Cut string if it needs
         if (is_string($args)) {
-            if (strlen($args) > self::$MAX_STRING_LENGTH) {
-                return "'" . substr($args, 0, self::$MAX_STRING_LENGTH) . "...'";
-            }
-            return "'" . $args . "'";
+            return static::buildString($args);
         }
 
         if (is_bool($args)) {
@@ -254,6 +231,56 @@ class RequestHelper
         }
 
         return $args;
+    }
+
+    /**
+     * @param array $args
+     * @return string
+     */
+    protected static function buildArray($args)
+    {
+        if (!count($args)) {
+            return '';
+        }
+        $result = '{';
+        $max = count($args) - 1;
+        $i = 0;
+        foreach ($args as $key => $value) {
+            $assoc = null;
+            if (!is_int($key)) {
+                $assoc = $key . ' = ';
+            }
+            $result .= $assoc . self::buildArgs($value) . ($i !== $max ? ', ' : null);
+            $i++;
+        }
+        return $result . '}';
+    }
+
+    /**
+     * @param mixed $args
+     * @return string
+     */
+    protected static function buildObject($args)
+    {
+        if ($args instanceof Bin) {
+            return '[Binary]';
+        }
+        if (method_exists($args, '__toString')) {
+            return "'" . self::buildArgs((string)$args) . "'";
+        }
+        return '[OBJECT]';
+    }
+
+    /**
+     * @param string $args
+     * @return string
+     */
+    protected static function buildString($args)
+    {
+        if (strlen($args) > self::$MAX_STRING_LENGTH) {
+            return "'" . substr($args, 0, self::$MAX_STRING_LENGTH) . "...'";
+        }
+        return "'" . $args . "'";
     }
 
     /**
