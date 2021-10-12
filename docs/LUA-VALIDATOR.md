@@ -2,7 +2,7 @@ LuaValidator
 ======================================
 `LuaValidator` allows to use tarantool lua function for validating values and model's properties.
 
-You can use as ad hoc validator or with models inherited from: `yii\base\Model`, `yii\db\ActiveRecord`, `mhthnz\tarantool\ActiveRecord`, `yii\base\DynamicModel`.
+You can use as ad hoc validator or with models inherited from: `yii\base\Model`, `yii\db\ActiveRecord`, `mhthnz\tarantool\ActiveRecord` and with `yii\base\DynamicModel`.
 
 Property `value` and some additional `params` will be sent to lua function. Function have to return `boolean` value, or error will be generated.
 

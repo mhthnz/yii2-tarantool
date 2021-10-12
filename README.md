@@ -6,7 +6,7 @@ Tarantool connector for yii2 framework
 ![Score](https://scrutinizer-ci.com/g/mhthnz/yii2-tarantool/badges/quality-score.png?b=master)
 ![Coverage](https://scrutinizer-ci.com/g/mhthnz/yii2-tarantool/badges/coverage.png?b=master)
 
-[Tarantool](https://www.tarantool.io/en/doc/latest/) connector for yii2 framework. Allow to use framework abstractions such as ActiveRecord, Schema, TableSchema, Query, ActiveQuery and etc using tarantool database.
+[Tarantool](https://www.tarantool.io/en/doc/latest/) connector for yii2 framework. Allows to perform SQL and NoSQL queries, framework abstractions such as ActiveRecord, Schema, TableSchema, Query, ActiveQuery and etc using tarantool database.
 
 Documentation is here: [docs/README.md](docs/README.md)
 

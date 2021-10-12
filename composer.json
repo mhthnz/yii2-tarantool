@@ -1,6 +1,6 @@
 {
     "name": "mhthnz/yii2-tarantool",
-    "description": "Tarantool connector for yii2 framework. Allow to use ActiveRecord, Schemas and more.",
+    "description": "Tarantool connector for yii2 framework. Allows to perform SQL and NoSQL queries, ActiveRecord, Schemas and more.",
     "type": "yii2-extension",
     "keywords": ["yii2"," tarantool", "db", "nosql"],
     "license": "GPL-3.0+",
