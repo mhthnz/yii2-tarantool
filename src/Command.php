@@ -62,7 +62,7 @@ class Command extends \yii\db\Command
      */
     public function queryAll($fetchMode = null)
     {
-        return $this->queryInternal('fetchAll', $fetchMode);
+        return $this->queryInternal('fetchAll');
     }
 
     /**
@@ -70,7 +70,7 @@ class Command extends \yii\db\Command
      */
     public function queryOne($fetchMode = null)
     {
-        return $this->queryInternal('fetch', $fetchMode);
+        return $this->queryInternal('fetch');
     }
 
     /**
@@ -78,7 +78,7 @@ class Command extends \yii\db\Command
      */
     public function queryScalar()
     {
-        return $this->queryInternal('fetchColumn', 0);
+        return $this->queryInternal('fetchColumn');
     }
 
     /**
@@ -271,7 +271,6 @@ class Command extends \yii\db\Command
         return [
             __CLASS__,
             $method,
-            $fetchMode,
             $this->db->dsn,
             $this->db->instanceUuid,
             $this->getSql(),
@@ -282,26 +281,62 @@ class Command extends \yii\db\Command
     /**
      * {@inheritdoc}
      */
-    protected function queryInternal($method, $fetchMode = null)
+    protected function queryInternal($method = '', $fetchMode = null)
     {
         list($profile, $rawSql) = $this->logQuery('mhthnz\\tarantool\\Command::query');
+        $resultArray = [];
 
+        // Trying to get from cache
         if ($method !== '') {
-            $info = $this->db->getQueryCacheInfo($this->queryCacheDuration, $this->queryCacheDependency);
-            if (is_array($info)) {
-                /* @var $cache \yii\caching\CacheInterface */
-                $cache = $info[0];
-                $cacheKey = $this->getCacheKey($method, $fetchMode, '');
-                $result = $cache->get($cacheKey);
-                if (is_array($result) && isset($result[0])) {
-                    Yii::debug('Query result served from cache', 'mhthnz\\tarantool\\Command::query');
-                    return $result[0];
-                }
+            $resultArray = $this->queryInternalFromCache($method);
+            if ($resultArray['result'] !== null) {
+                return $resultArray['result'];
             }
         }
-
+        
         $this->prepare(true);
+        $cache = $resultArray['cache'] ?? null;
+        $result = $this->queryInternalFetch($method, $profile, $rawSql, $cache);
 
+        return $result;
+    }
+
+    /**
+     * @param string $method
+     * @return array
+     */
+    protected function queryInternalFromCache(string $method)
+    {
+        $info = $this->db->getQueryCacheInfo($this->queryCacheDuration, $this->queryCacheDependency);
+        $resultArray = [];
+        if (is_array($info)) {
+            /* @var $cache \yii\caching\CacheInterface */
+            $cache = $info[0];
+            $cacheKey = $this->getCacheKey($method, null, '');
+            $resultArray['cache']['cache'] = $cache;
+            $resultArray['cache']['cacheKey'] = $cacheKey;
+            $resultArray['cache']['info'] = $info;
+            $result = $cache->get($cacheKey);
+
+            if (is_array($result) && isset($result[0])) {
+                Yii::debug('Query result served from cache', 'mhthnz\\tarantool\\Command::query');
+                $resultArray['result'] = $result[0];
+                return $resultArray;
+            }
+        }
+        $resultArray['result'] = null;
+        return $resultArray;
+    }
+
+    /**
+     * @param string $method
+     * @param bool $profile
+     * @param string $rawSql
+     * @param array|null $cache
+     * @throws \yii\db\Exception
+     */
+    protected function queryInternalFetch($method, $profile, $rawSql, $cache)
+    {
         try {
             $profile and Yii::beginProfile($rawSql, 'mhthnz\\tarantool\\Command::query');
 
@@ -310,14 +345,12 @@ class Command extends \yii\db\Command
             if ($method === '') {
                 $result = new DataReader($this);
             } else {
-                if ($fetchMode === null) {
-                    $fetchMode = $this->fetchMode;
-                }
                 $queryResult = new SqlQueryResult(
                     $this->response->getBodyField(Keys::DATA),
                     $this->response->getBodyField(Keys::METADATA)
                 );
                 $generator = $queryResult->getIterator();
+                $result = null;
                 switch($method) {
                     case 'fetchAll': {
                         $result = [];
@@ -353,8 +386,12 @@ class Command extends \yii\db\Command
             throw $e;
         }
 
-        if (isset($cache, $cacheKey, $info)) {
-            $cache->set($cacheKey, [$result], $info[1], $info[2]);
+        if ($cache !== null) {
+            $cacheObj = $cache['cache'];
+            $info = $cache['info'];
+            $cacheKey = $cache['cacheKey'];
+
+            $cacheObj->set($cacheKey, [$result], $info[1], $info[2]);
             Yii::debug('Saved query result in cache', 'mhthnz\\tarantool\\Command::query');
         }
 
