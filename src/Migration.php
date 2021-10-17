@@ -7,7 +7,10 @@
 
 namespace mhthnz\tarantool;
 
+use Tarantool\Client\Exception\ClientException;
+use Tarantool\Client\Schema\Operations;
 use yii\base\Component;
+use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use mhthnz\tarantool\ColumnSchemaBuilder;
 use yii\db\MigrationInterface;
@@ -489,6 +492,237 @@ class Migration extends Component implements MigrationInterface
     {
         $time = $this->beginCommand("drop index $name on $table");
         $this->db->createCommand()->dropIndex($name, $table)->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * Creates memtx engine space using nosql interface.
+     * @see \mhthnz\tarantool\nosql\Command::createSpace()
+     * @param string $name
+     * @param array $format
+     * @param array $options
+     */
+    public function createMemtxSpace(string $name, array $format = [], array $options = [])
+    {
+        $this->createSpace($name, $format, 'memtx', $options);
+    }
+
+    /**
+     * Creates vinyl engine space using nosql interface.
+     * @see \mhthnz\tarantool\nosql\Command::createSpace()
+     * @param string $name
+     * @param array $format
+     * @param array $options
+     */
+    public function createVinylSpace(string $name, array $format = [], array $options = [])
+    {
+        $this->createSpace($name, $format, 'vinyl', $options);
+    }
+
+    /**
+     * Drops space by space name using nosql interface.
+     * @see \mhthnz\tarantool\nosql\Command::dropSpace()
+     * @param string $name
+     * @throws ClientException
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    public function dropSpace(string $name)
+    {
+        $command = $this->db->createNosqlCommand()->dropSpace($name);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * Clears space data (doesn't reset sequence) using nosql interface.
+     * @see \mhthnz\tarantool\nosql\Command::truncateSpace()
+     * @param string $name
+     * @throws ClientException
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    public function truncateSpace(string $name)
+    {
+        $command = $this->db->createNosqlCommand()->truncateSpace($name);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * Creates space index using nosql interface.
+     * @see \mhthnz\tarantool\nosql\Command::createIndex()
+     * @param string $space
+     * @param string $indexName
+     * @param array $fields
+     * @param bool $unique
+     * @param string $type
+     * @throws ClientException
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    public function createSpaceIndex(string $space, string $indexName, array $fields, bool $unique = false, string $type = "tree")
+    {
+        $command = $this->db->createNosqlCommand()->createIndex($space, $indexName, $fields, $unique, $type);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * Drops space index using nosql interface.
+     * @see \mhthnz\tarantool\nosql\Command::dropSpace()
+     * @param string $space
+     * @param string $indexName
+     * @throws ClientException
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    public function dropSpaceIndex(string $space, string $indexName)
+    {
+        $command = $this->db->createNosqlCommand()->dropIndex($space, $indexName);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * Inserts tuple into space using nosql interface.
+     * @see \mhthnz\tarantool\nosql\Command::insert()
+     * @param string $space
+     * @param array $values
+     * @throws ClientException
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    public function spaceInsert(string $space, array $values)
+    {
+        $command = $this->db->createNosqlCommand()->insert($space, $values);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * Updates tuple fields by condition using nosql interface.
+     * @see \mhthnz\tarantool\nosql\Command::update()
+     * @param string $space
+     * @param $condition
+     * @param Operations $operations
+     * @throws ClientException
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    public function spaceUpdate(string $space, $condition, Operations $operations)
+    {
+        $command = $this->db->createNosqlCommand()->update($space, $condition, $operations);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * Inserts or updates tuple using nosql interface.
+     * @see \mhthnz\tarantool\nosql\Command::upsert()
+     * @param string $space
+     * @param array $tuple
+     * @param Operations $operations
+     * @throws ClientException
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    public function spaceUpsert(string $space, array $tuple, Operations $operations)
+    {
+        $command = $this->db->createNosqlCommand()->upsert($space, $tuple, $operations);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * Replaces tuple using nosql interface.
+     * @see \mhthnz\tarantool\nosql\Command::replace()
+     * @param string $space
+     * @param array $tuple
+     * @throws ClientException
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    public function spaceReplace(string $space, array $tuple)
+    {
+        $command = $this->db->createNosqlCommand()->replace($space, $tuple);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * Deletes tuple using nosql interface.
+     * @see \mhthnz\tarantool\nosql\Command::delete()
+     * @param string $space
+     * @param $condition
+     * @throws ClientException
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    public function spaceDelete(string $space, $condition)
+    {
+        $command = $this->db->createNosqlCommand()->delete($space, $condition);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * Calls lua function.
+     * @see \mhthnz\tarantool\nosql\Command::call()
+     * @param string $func
+     * @param array $params
+     * @throws ClientException
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    public function call(string $func, array $params = [])
+    {
+        $command = $this->db->createNosqlCommand()->call($func, $params);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * Evaluates lua expression.
+     * @see \mhthnz\tarantool\nosql\Command::evaluate()
+     * @param string $expr
+     * @param array $params
+     * @throws ClientException
+     * @throws \Throwable
+     * @throws InvalidConfigException
+     */
+    public function evaluate(string $expr, array $params = [])
+    {
+        $command = $this->db->createNosqlCommand()->evaluate($expr, $params);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * @param string $name
+     * @param array $format
+     * @param string $engine
+     * @param array $options
+     * @throws ClientException
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    protected function createSpace(string $name, array $format, string $engine, array $options)
+    {
+        $command = $this->db->createNosqlCommand()->createSpace($name, $format, $engine, $options);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
         $this->endCommand($time);
     }
 

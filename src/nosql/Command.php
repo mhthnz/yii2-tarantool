@@ -232,6 +232,8 @@ class Command extends BaseObject
     }
 
     /**
+     * Evaluate lua expression.
+     *
      * @param string $expr
      * @param array $params
      * @return $this
@@ -244,6 +246,8 @@ class Command extends BaseObject
     }
 
     /**
+     * Call lua function.
+     *
      * @param string $func
      * @param array $params
      * @return $this

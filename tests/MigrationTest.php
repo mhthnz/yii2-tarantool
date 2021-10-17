@@ -810,4 +810,243 @@ CODE
         $this->assertEquals(false, $indexes[2]->isUnique);
     }
 
+    public function testNosqlMigration()
+    {
+        $this->createMigrationWithContent("CreateSpaces",
+            <<<CODE
+
+        \$this->createMemtxSpace('myspace', [
+            ['name' => 'id', 'type' => 'unsigned', 'is_nullable' => false],
+            ['name' => 'name', 'type' => 'string', 'is_nullable' => false],
+            ['name' => 'field', 'type' => 'integer', 'is_nullable' => true],
+            ['name' => 'field1', 'type' => 'integer', 'is_nullable' => true],
+            ['name' => 'uniq', 'type' => 'integer', 'is_nullable' => false],
+        ], ['id' => 111]);
+        
+        \$this->createVinylSpace('myspace1', [
+            ['name' => 'id', 'type' => 'unsigned', 'is_nullable' => false],
+            ['name' => 'name', 'type' => 'string', 'is_nullable' => false],
+            ['name' => 'field', 'type' => 'integer', 'is_nullable' => false],
+            ['name' => 'field1', 'type' => 'integer', 'is_nullable' => true],
+            ['name' => 'uniq', 'type' => 'integer', 'is_nullable' => false],
+        ], ['id' => 112]);
+
+
+CODE
+            , <<<CODE
+        \$this->dropSpace('myspace');
+        \$this->dropSpace('myspace1');
+CODE
+            , gmdate("ymd_Hi21"));
+
+        $this->createMigrationWithContent("CreateSpacesIndexes",
+            <<<CODE
+
+        \$this->createSpaceIndex('myspace', 'pk', ['id' => 'unsigned'], true, 'HASH');
+        \$this->createSpaceIndex('myspace', 'stringindex', ['name' => 'string']);
+        \$this->createSpaceIndex('myspace1', 'pk', ['field' => 'integer'], true);
+        \$this->createSpaceIndex('myspace1', 'intcompositeindex', ['field' => 'integer', 'field1' => 'integer']);
+        \$this->createSpaceIndex('myspace', 'uniq', ['uniq' => 'integer'], true);
+CODE
+            , <<<CODE
+        \$this->dropSpaceIndex('myspace', 'pk');
+        \$this->dropSpaceIndex('myspace1', 'pk');
+        \$this->dropSpaceIndex('myspace', 'stringindex');
+        \$this->dropSpaceIndex('myspace1', 'intcompositeindex');
+        \$this->dropSpaceIndex('myspace', 'uniq');
+CODE
+            , gmdate("ymd_Hi22"));
+
+        $this->createMigrationWithContent("CreateSpacesIndexes",
+            <<<CODE
+
+        \$this->createSpaceIndex('myspace', 'pk', ['id' => 'unsigned'], true, 'HASH');
+        \$this->createSpaceIndex('myspace', 'stringindex', ['name' => 'string']);
+        \$this->createSpaceIndex('myspace1', 'pk', ['id' => 'unsigned'], true);
+        \$this->createSpaceIndex('myspace1', 'intcompositeindex', ['field' => 'integer', 'field1' => 'integer']);
+        \$this->createSpaceIndex('myspace', 'uniq', ['uniq' => 'integer'], true);
+CODE
+            , <<<CODE
+        \$this->dropSpaceIndex('myspace', 'stringindex');
+        \$this->dropSpaceIndex('myspace1', 'intcompositeindex');
+        \$this->dropSpaceIndex('myspace', 'uniq');
+        \$this->dropSpaceIndex('myspace', 'pk');
+        \$this->dropSpaceIndex('myspace1', 'pk');
+CODE
+            , gmdate("ymd_Hi22"));
+
+        $this->createMigrationWithContent("InsertDeleteTruncate",
+            <<<CODE
+        
+        \$this->spaceInsert('myspace', [1, "text", 10, 11, 12]);
+        \$this->spaceInsert('myspace', [2, "text 1", 11, 12, 13]);
+        \$this->spaceInsert('myspace', [3, "text 2", 12, 13, 14]);
+        \$this->spaceInsert('myspace1', [1, "text", 10, 11, 12]);
+        \$this->spaceInsert('myspace1', [2, "text 1", 11, 12, 13]);
+        \$this->spaceInsert('myspace1', [3, "text 2", 12, 13, 14]);
+CODE
+            , <<<CODE
+        \$this->truncateSpace('myspace');
+        \$this->spaceDelete('myspace1', ['pk' => 2]);
+        \$this->spaceDelete('myspace1', 3);
+CODE
+            , gmdate("ymd_Hi23"));
+
+
+        $this->createMigrationWithContent("ReplaceUpdateUpsert",
+            <<<CODE
+        
+        \$this->spaceUpdate('myspace', 1, \Tarantool\Client\Schema\Operations::set(1, "new text"));
+        \$this->spaceUpsert('myspace1', [2, "text 1", 11, 12, 13], \Tarantool\Client\Schema\Operations::set(1, "upsert text"));
+        \$this->spaceUpsert('myspace1', [4, "text 4", 111, 121, 131], \Tarantool\Client\Schema\Operations::set(1, "upsert text"));
+        \$this->spaceReplace('myspace', [3, "text replaced", 12, 13, 14111]);
+        \$this->spaceReplace('myspace', [5, "text 5", 121, 131, 14121]);
+
+
+CODE
+            , <<<CODE
+
+        \$this->spaceDelete('myspace1', 4);
+        \$this->spaceDelete('myspace', 5);
+        \$this->spaceUpdate('myspace', 1, \Tarantool\Client\Schema\Operations::set(1, "text"));
+        \$this->spaceUpdate('myspace1', 2, \Tarantool\Client\Schema\Operations::set(1, "text 1"));
+        \$this->spaceUpdate('myspace', 3, \Tarantool\Client\Schema\Operations::set(1, "text 2"));
+        
+CODE
+            , gmdate("ymd_Hi24"));
+
+
+        $this->createMigrationWithContent("EvalCall",
+            <<<CODE
+        
+        \$this->call('box.space.myspace:insert', [[61, 'text 6', 777, 666, 555]]);
+        \$this->evaluate('box.space.myspace1:insert(...)', [[61, 'text 6', 777, 666, 555]]);
+
+CODE
+            , <<<CODE
+        
+        \$this->call('box.space.myspace:delete', [61]);
+        \$this->evaluate('box.space.myspace1:delete(...)', [61]);
+        
+CODE
+            , gmdate("ymd_Hi25"));
+
+        // Spaces
+        $this->runMigrateControllerAction('up', [1]);
+        $this->assertSame(ExitCode::OK, $this->getExitCode());
+        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace")->queryAll();
+        $this->assertNotEquals([null], $resp);
+        $this->assertEquals('memtx', $resp['engine']);
+
+        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->queryAll();
+        $this->assertNotEquals([null], $resp);
+        $this->assertEquals('vinyl', $resp['engine']);
+
+        // Indexes
+        $this->runMigrateControllerAction('up', [1]);
+        $this->assertSame(ExitCode::OK, $this->getExitCode());
+        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace.index")->queryAll();
+        $this->assertArrayHasKey('pk', $resp);
+        $this->assertArrayHasKey('stringindex', $resp);
+        $this->assertArrayHasKey('uniq', $resp);
+
+        $this->assertEquals(true, $resp['pk']['unique']);
+        $this->assertEquals('HASH', strtoupper($resp['pk']['type']));
+        $this->assertEquals([['type' => 'unsigned', 'is_nullable' => false, 'fieldno' => 1]], $resp['pk']['parts']);
+
+        $this->assertEquals(false, $resp['stringindex']['unique']);
+        $this->assertEquals('TREE', strtoupper($resp['stringindex']['type']));
+        $this->assertEquals([['type' => 'string', 'is_nullable' => false, 'fieldno' => 2]], $resp['stringindex']['parts']);
+
+        $this->assertEquals(true, $resp['uniq']['unique']);
+        $this->assertEquals('TREE', strtoupper($resp['stringindex']['type']));
+        $this->assertEquals([['type' => 'integer', 'is_nullable' => false, 'fieldno' => 5]], $resp['uniq']['parts']);
+
+        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace1.index")->queryAll();
+        $this->assertArrayHasKey('pk', $resp);
+        $this->assertArrayHasKey('intcompositeindex', $resp);
+        $this->assertEquals(true, $resp['pk']['unique']);
+        $this->assertEquals('TREE', strtoupper($resp['pk']['type']));
+        $this->assertEquals([['type' => 'unsigned', 'is_nullable' => false, 'fieldno' => 1]], $resp['pk']['parts']);
+
+        $this->assertEquals(false, $resp['intcompositeindex']['unique']);
+        $this->assertEquals('TREE', strtoupper($resp['intcompositeindex']['type']));
+        $this->assertEquals([['type' => 'integer', 'is_nullable' => false, 'fieldno' => 3], ['type' => 'integer', 'is_nullable' => true, 'fieldno' => 4]], $resp['intcompositeindex']['parts']);
+
+        // Insert
+        $this->runMigrateControllerAction('up', [1]);
+        $this->assertSame(ExitCode::OK, $this->getExitCode());
+
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace1')->column(1);
+        $this->assertEquals(['text', 'text 1', 'text 2'], $resp);
+
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
+        $this->assertEquals(['text', 'text 1', 'text 2'], $resp);
+
+        // Replace upsert update
+        $this->runMigrateControllerAction('up', [1]);
+        $this->assertSame(ExitCode::OK, $this->getExitCode());
+
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace1')->column(1);
+        $this->assertEquals(['text', 'upsert text', 'text 2', 'text 4'], $resp);
+
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
+        $this->assertEquals(['new text', 'text 1', 'text 5', 'text replaced'], $resp);
+
+        // Call eval
+        $this->runMigrateControllerAction('up', [1]);
+        $this->assertSame(ExitCode::OK, $this->getExitCode());
+
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace1')->column(1);
+        $this->assertEquals(['text', 'upsert text', 'text 2', 'text 4', 'text 6'], $resp);
+
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
+        $this->assertEquals(['new text', 'text 1', 'text 5', 'text 6', 'text replaced'], $resp);
+
+        // Call eval down
+        $this->runMigrateControllerAction('down', [1]);
+        $this->assertSame(ExitCode::OK, $this->getExitCode());
+
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace1')->column(1);
+        $this->assertEquals(['text', 'upsert text', 'text 2', 'text 4'], $resp);
+
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
+        $this->assertEquals(['new text', 'text 1', 'text 5', 'text replaced'], $resp);
+
+        // Update replace upsert down
+        $this->runMigrateControllerAction('down', [1]);
+        $this->assertSame(ExitCode::OK, $this->getExitCode());
+
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace1')->column(1);
+        $this->assertEquals(['text', 'text 1', 'text 2'], $resp);
+
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
+        $this->assertEquals(['text', 'text 1', 'text 2'], $resp);
+
+        // Insert delete truncate down
+        $this->runMigrateControllerAction('down', [1]);
+        $this->assertSame(ExitCode::OK, $this->getExitCode());
+        $this->assertEquals(0, $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->count());
+        $this->assertEquals(1, $this->getDb()->createNosqlQuery()->from('myspace1')->count());
+
+        // Create drop index down
+        $this->runMigrateControllerAction('down', [1]);
+        $this->assertSame(ExitCode::OK, $this->getExitCode());
+
+        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace.index")->queryAll();
+        $this->assertEmpty($resp);
+
+        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace1.index")->queryAll();
+        $this->assertEmpty($resp);
+
+        // Drop space
+        $this->runMigrateControllerAction('down', [1]);
+        $this->assertSame(ExitCode::OK, $this->getExitCode());
+
+        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace")->queryAll();
+        $this->assertEquals([null], $resp);
+
+        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->queryAll();
+        $this->assertEquals([null], $resp);
+    }
 }
