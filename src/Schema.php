@@ -414,14 +414,49 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
     protected function loadColumnSchema($info)
     {
         $column = $this->createColumnSchema();
-
         $column->name = $info['name'];
         $column->allowNull = !isset($info['is_nullable']) ? true : $info['is_nullable'];
         $column->isPrimaryKey = $info['primary'];
         $column->autoIncrement = $info['autoincrement'];
-        $val = isset($info['default']) ? $info['default'] : null;
+        $val = $this->processValue($info);
+        $column->defaultValue = $val;
+        $column->dbType = $info['type'];
+        $column->unsigned = $info['type'] === "unsigned";
+        $column->type = self::TYPE_STRING;
+        $this->fillColumnType($column);
+        $column->phpType = $this->getColumnPhpType($column);
 
-        // I got 'defaultValue' instead of just defaultValue string
+        return $column;
+    }
+
+    /**
+     * @param ColumnSchema $column
+     * @return void
+     */
+    protected function fillColumnType(ColumnSchema $column)
+    {
+        if (preg_match('/^(\w+)(?:\(([^\)]+)\))?/', $column->dbType, $matches)) {
+            $type = strtolower($matches[1]);
+            if (isset($this->typeMap[$type])) {
+                $column->type = $this->typeMap[$type];
+            }
+            if (!empty($matches[2])) {
+                $values = explode(',', $matches[2]);
+                $column->size = $column->precision = (int) $values[0];
+                if (isset($values[1])) {
+                    $column->scale = (int) $values[1];
+                }
+            }
+        }
+    }
+
+    /**
+     * @param array $info
+     * @return bool|string|null
+     */
+    protected function processValue(array $info)
+    {
+        $val = $info['default'] ?? null;
         if (($info['type'] === Schema::TYPE_STRING || $info['type'] === Schema::TYPE_TEXT || $info['type'] === Schema::TYPE_CHAR) && ($strlen = strlen(/** @scrutinizer ignore-type */ $val)) >= 2) {
             if ($val[0] === "'" && $val[$strlen - 1] === "'") {
                 $val = substr($val, 1, $strlen - 2);
@@ -431,26 +466,8 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
         else if ($info['type'] === Schema::TYPE_BOOLEAN && is_string($val)) {
             $val = $val === 'true';
         }
-        $column->defaultValue = $val;
-        $column->dbType = $info['type'];
-        $column->unsigned = $info['type'] === "unsigned";
 
-        $column->type = self::TYPE_STRING;
-        if (preg_match('/^(\w+)(?:\(([^\)]+)\))?/', $column->dbType, $matches)) {
-            $type = strtolower($matches[1]);
-            if (isset($this->typeMap[$type])) {
-                $column->type = $this->typeMap[$type];
-            }
-            if (!empty($matches[2])) {
-                    $values = explode(',', $matches[2]);
-                    $column->size = $column->precision = (int) $values[0];
-                    if (isset($values[1])) {
-                        $column->scale = (int) $values[1];
-                    }
-            }
-        }
-        $column->phpType = $this->getColumnPhpType($column);
-        return $column;
+        return $val;
     }
 
     /**

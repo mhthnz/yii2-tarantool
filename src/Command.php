@@ -341,43 +341,10 @@ class Command extends \yii\db\Command
             $profile and Yii::beginProfile($rawSql, 'mhthnz\\tarantool\\Command::query');
 
             $this->internalExecute($rawSql);
-
             if ($method === '') {
                 $result = new DataReader($this);
             } else {
-                $queryResult = new SqlQueryResult(
-                    $this->response->getBodyField(Keys::DATA),
-                    $this->response->getBodyField(Keys::METADATA)
-                );
-                $generator = $queryResult->getIterator();
-                $result = null;
-                switch($method) {
-                    case 'fetchAll': {
-                        $result = [];
-                        foreach ($generator as $row) {
-                            $result[] = $row;
-                        }
-                        break;
-                    }
-                    case 'fetch': {
-                        if (!$queryResult->count()) {
-                            $result = false;
-                            break;
-                        }
-                        $result = $generator->current();
-                        break;
-                    }
-                    case 'fetchColumn': {
-                        if (!$queryResult->count()) {
-                            $result = false;
-                            break;
-                        }
-                        $r = $generator->current();
-                        $result = array_shift($r);
-                        break;
-                    }
-                }
-
+                $result = FetchMethod::parseResponse($method, $this->response);
             }
 
             $profile and Yii::endProfile($rawSql, 'mhthnz\\tarantool\\Command::query');

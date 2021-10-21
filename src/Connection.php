@@ -976,13 +976,61 @@ class Connection extends Component
         if (empty($pool)) {
             return null;
         }
-
         if (!isset($sharedConfig['class'])) {
             $sharedConfig['class'] = get_class($this);
         }
 
         $cache = is_string($this->serverStatusCache) ? Yii::$app->get($this->serverStatusCache, false) : $this->serverStatusCache;
+        if (($result = $this->tryOpenConnections($pool, $cache, $sharedConfig)) !== null) {
+            return $result;
+        }
 
+        return $this->tryOpenConnectionsCached($pool, $cache, $sharedConfig);
+    }
+
+    /**
+     * @param array $pool
+     * @param $cache
+     * @param $sharedConfig
+     * @return Connection|null
+     * @throws InvalidConfigException
+     */
+    protected function tryOpenConnectionsCached(array $pool, $cache, $sharedConfig)
+    {
+        if ($cache instanceof CacheInterface) {
+            // if server status cache is enabled and no server is available
+            // ignore the cache and try to connect anyway
+            // $pool now only contains servers we did not already try in the loop above
+            foreach ($pool as $config) {
+
+                /* @var $db Connection */
+                $db = Yii::createObject($config);
+                try {
+                    $db->open();
+                } catch (\Exception $e) {
+                    Yii::warning("Connection ({$config['dsn']}) failed: " . $e->getMessage(), __METHOD__);
+                    continue;
+                }
+
+                // mark this server as available again after successful connection
+                $cache->delete([__METHOD__, $config['dsn']]);
+
+                return $db;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array $pool
+     * @param $cache
+     * @param $sharedConfig
+     * @return Connection|null
+     * @throws InvalidConfigException
+     */
+    protected function tryOpenConnections(array $pool, $cache, $sharedConfig)
+    {
         foreach ($pool as $i => $config) {
             $pool[$i] = $config = array_merge($sharedConfig, $config);
             if (empty($config['dsn'])) {
@@ -1009,28 +1057,6 @@ class Connection extends Component
                 }
                 // exclude server from retry below
                 unset($pool[$i]);
-            }
-        }
-
-        if ($cache instanceof CacheInterface) {
-            // if server status cache is enabled and no server is available
-            // ignore the cache and try to connect anyway
-            // $pool now only contains servers we did not already try in the loop above
-            foreach ($pool as $config) {
-
-                /* @var $db Connection */
-                $db = Yii::createObject($config);
-                try {
-                    $db->open();
-                } catch (\Exception $e) {
-                    Yii::warning("Connection ({$config['dsn']}) failed: " . $e->getMessage(), __METHOD__);
-                    continue;
-                }
-
-                // mark this server as available again after successful connection
-                $cache->delete([__METHOD__, $config['dsn']]);
-
-                return $db;
             }
         }
 
