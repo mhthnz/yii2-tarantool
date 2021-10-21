@@ -612,6 +612,18 @@ class NosqlQueryTest extends TestCase
             ['text 22'],
             $this->getDb()->createNosqlQuery()->from('myspace')->orderDesc()->usingIndex('stringindex')->where(['=', 'pk', 3])->column(1)
         );
+
+        $res = $this->getDb()->createNosqlQuery()->from('myspace')->max();
+        $this->assertEquals(8, $res[0]);
+
+        $res = $this->getDb()->createNosqlQuery()->from('myspace')->min();
+        $this->assertEquals(1, $res[0]);
+
+        $res = $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->min();
+        $this->assertEquals('text 1', $res[1]);
+
+        $res = $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->max();
+        $this->assertEquals('text 3', $res[1]);
     }
 
 }

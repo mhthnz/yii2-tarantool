@@ -34,7 +34,12 @@ $query->from('spacename')->where(['<', 10])->limit(5)->all();
 $query->from('spacename')->where(['<=', 10])->limit(5)->all();
 
 // Retrieve tuples ordered DESC by `secondindex`
+$query->from('spacename')->usingIndex('secondindex')->orderDesc()->all();
+// Same effect as:
 $query->from('spacename')->where(['=', 'secondindex', []])->orderDesc()->all();
+// You can also use usingIndex with count/max/min
+$query->from('spacename')->usingIndex('secondindex')->max();
+$query->from('spacename')->usingIndex('secondindex')->min();
 
 // Using non-primary indexes
 $key = 10
