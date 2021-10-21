@@ -1002,6 +1002,8 @@ CODE
 
         $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
         $this->assertEquals(['new text', 'text 1', 'text 5', 'text 6', 'text replaced'], $resp);
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->column(1);
+        $this->assertEquals(['new text', 'text 1', 'text 5', 'text 6', 'text replaced'], $resp);
 
         // Call eval down
         $this->runMigrateControllerAction('down', [1]);
@@ -1011,6 +1013,8 @@ CODE
         $this->assertEquals(['text', 'upsert text', 'text 2', 'text 4'], $resp);
 
         $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
+        $this->assertEquals(['new text', 'text 1', 'text 5', 'text replaced'], $resp);
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->column(1);
         $this->assertEquals(['new text', 'text 1', 'text 5', 'text replaced'], $resp);
 
         // Update replace upsert down
@@ -1022,10 +1026,13 @@ CODE
 
         $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
         $this->assertEquals(['text', 'text 1', 'text 2'], $resp);
+        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->column(1);
+        $this->assertEquals(['text', 'text 1', 'text 2'], $resp);
 
         // Insert delete truncate down
         $this->runMigrateControllerAction('down', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
+        $this->assertEquals(0, $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->count());
         $this->assertEquals(0, $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->count());
         $this->assertEquals(1, $this->getDb()->createNosqlQuery()->from('myspace1')->count());
 

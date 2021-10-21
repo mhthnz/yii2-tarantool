@@ -3,7 +3,6 @@
 namespace mhthnz\tarantool\tests;
 
 
-
 use mhthnz\tarantool\nosql\Query;
 use Tarantool\Client\Schema\IteratorTypes;
 use yii\helpers\ArrayHelper;
@@ -583,6 +582,36 @@ class NosqlQueryTest extends TestCase
         $this->assertEquals([12, 12, 12, 13, 15], $query->where(['>', 3])->column(2));
 
         $this->assertEquals(['text 3'], $query->where(['>', 'intindex', 13])->column(1));
+    }
+
+    public function testUsingIndex()
+    {
+        $this->makeSpaceForCmd();
+
+        $this->assertEquals(
+            $this->getDb()->createNosqlQuery()->from('myspace')->all(),
+            $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('pk')->all()
+        );
+        $this->assertEquals(
+            $this->getDb()->createNosqlQuery()->from('myspace')->orderDesc()->all(),
+            $this->getDb()->createNosqlQuery()->orderDesc()->from('myspace')->usingIndex('pk')->all()
+        );
+
+        $this->assertEquals(
+            $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1),
+            $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->column(1)
+        );
+
+        $this->assertEquals(
+            $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->orderDesc()->column(1),
+            $this->getDb()->createNosqlQuery()->from('myspace')->orderDesc()->usingIndex('stringindex')->column(1)
+        );
+
+        // usingIndex doesn't affect (where > using index)
+        $this->assertEquals(
+            ['text 22'],
+            $this->getDb()->createNosqlQuery()->from('myspace')->orderDesc()->usingIndex('stringindex')->where(['=', 'pk', 3])->column(1)
+        );
     }
 
 }

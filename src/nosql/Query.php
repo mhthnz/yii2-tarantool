@@ -48,6 +48,11 @@ class Query extends BaseObject
     public $order = SORT_ASC;
 
     /**
+     * @var string
+     */
+    public $index = '';
+
+    /**
      * @var Connection|null
      */
     private $_db;
@@ -135,6 +140,21 @@ class Query extends BaseObject
     public function where($condition)
     {
         $this->where = $condition;
+
+        return $this;
+    }
+
+    /**
+     * Set index, it can be useful in some situations.
+     * These operations have the same result:
+     * ->usingIndex('secondary_index')->orderAsc()->all()
+     * ->where(['=', 'secondary_index', []])->orderAsc()->all()
+     * @param string $index
+     * @return $this
+     */
+    public function usingIndex(string $index)
+    {
+        $this->index = $index;
 
         return $this;
     }
@@ -365,6 +385,10 @@ class Query extends BaseObject
 
         $indexID = 0;
         if (!is_array($this->where) || empty($this->where) || !isset(self::$ITERATOR_MAP[$this->where[0]])) {
+            if (!empty($this->index)) {
+                $space = $db->client->getSpace($this->from);
+                $indexID = $space->getIndexIDByName($this->index);
+            }
             return $indexID;
         }
 
