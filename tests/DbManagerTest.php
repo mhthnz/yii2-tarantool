@@ -366,12 +366,8 @@ class DbManagerTest extends ManagerTestCase
     private function assertSingleQueryToAssignmentsTable($logTarget)
     {
         $this->assertCount(1, $logTarget->messages, 'Only one query should have been performed, but there are the following logs: ' . print_r($logTarget->messages, true));
-        $this->assertContains('auth_assignment', $logTarget->messages[0][0], 'Log message should be a query to auth_assignment table');
+        $this->assertTrue(strpos($logTarget->messages[0][0], 'auth_assignment') !== false, 'Log message should be a query to auth_assignment table');
         $logTarget->messages = [];
     }
 
-    protected function getMigrationHistory()
-    {
-        // TODO: Implement getMigrationHistory() method.
-    }
 }

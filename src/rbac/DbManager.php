@@ -3,6 +3,7 @@
 namespace mhthnz\tarantool\rbac;
 
 use mhthnz\tarantool\Connection;
+use yii\db\Query;
 use yii\di\Instance;
 
 /**
@@ -45,5 +46,21 @@ class DbManager extends \yii\rbac\DbManager
     protected function supportsCascadeUpdate()
     {
         return true;
+    }
+
+    /**
+     * Predictable sorting behavior.
+     * {@inheritdoc}
+     */
+    public function getUserIdsByRole($roleName)
+    {
+        if (empty($roleName)) {
+            return [];
+        }
+
+        return (new Query())->select('[[user_id]]')
+            ->from($this->assignmentTable)
+            ->where(['item_name' => $roleName])
+            ->orderBy(['user_id' => SORT_DESC])->column($this->db);
     }
 }
