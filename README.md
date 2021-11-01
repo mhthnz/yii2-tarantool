@@ -76,12 +76,12 @@ Features
 * [Migrations](docs/MIGRATIONS.md)
 * Nosql [`Query`](docs/NOSQL.md#query) and [`Command`](docs/NOSQL.md#command) [for performing nosql requests](docs/NOSQL.md)
 * [Lua validator](docs/LUA-VALIDATOR.md)
+* [Rbac db source](docs/RBAC.md)
 
 Future plans
 ------------
 
 * I18n source
-* Rbac db source
 * Transactions
 * Gii code generator (models, crud, queries)
 * Connection slaves support
