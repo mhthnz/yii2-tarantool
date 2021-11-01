@@ -17,7 +17,7 @@ trait DbTrait
      */
     protected function getDb()
     {
-        return $this->getConnection();
+        return self::getConnection();
     }
 
     public function dropConstraints()

@@ -5,6 +5,7 @@ namespace mhthnz\tarantool\tests;
 use mhthnz\tarantool\console\MigrateController;
 use mhthnz\tarantool\Migration;
 use mhthnz\tarantool\QueryBuilder;
+use mhthnz\tarantool\rbac\DbManager;
 use mhthnz\tarantool\tests\classes\AnyCaseValue;
 use mhthnz\tarantool\tests\classes\AnyValue;
 use mhthnz\tarantool\tests\classes\Customer;
@@ -1055,5 +1056,59 @@ CODE
 
         $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->queryAll();
         $this->assertEquals([null], $resp);
+    }
+
+    public function testRbacMigrations()
+    {
+        $config = [
+            'migrationPath' => [],
+            'migrationNamespaces' => ['\mhthnz\tarantool\rbac\migrations']
+        ];
+
+        \Yii::$app->set('authManager', [
+            'class' => DbManager::class,
+        ]);
+
+        $res = $this->runMigrateControllerAction('new', [], $config);
+        $this->assertTrue((bool) preg_match('/m140506_102106_rbac_init/', $res));
+
+        $this->runMigrateControllerAction('up', [1], $config);
+        $t = $this->getDb()->schema->getTableNames();
+        $this->assertContains('auth_rule', $t);
+        $this->assertContains('auth_item', $t);
+        $this->assertContains('auth_item_child', $t);
+        $this->assertContains('auth_assignment', $t);
+
+        $fks = $this->getDb()->schema->getTableForeignKeys('auth_rule');
+        $this->assertCount(0, $fks);
+
+        $fks = $this->getDb()->schema->getTableForeignKeys('auth_item');
+        $this->assertCount(1, $fks);
+
+        $fks = $this->getDb()->schema->getTableForeignKeys('auth_item_child');
+        $this->assertCount(2, $fks);
+
+        $fks = $this->getDb()->schema->getTableForeignKeys('auth_assignment');
+        $this->assertCount(1, $fks);
+
+        $idx = $this->getDb()->schema->getTableIndexes('auth_assignment');
+        $this->assertCount(3, $idx);
+
+        $idx = $this->getDb()->schema->getTableIndexes('auth_item');
+        $this->assertCount(3, $idx);
+
+        $idx = $this->getDb()->schema->getTableIndexes('auth_rule');
+        $this->assertCount(2, $idx);
+
+        $idx = $this->getDb()->schema->getTableIndexes('auth_item_child');
+        $this->assertCount(2, $idx);
+
+        $this->runMigrateControllerAction('down', [1], $config);
+
+        $t = $this->getDb()->schema->getTableNames('', true);
+        $this->assertNotContains('auth_rule', $t);
+        $this->assertNotContains('auth_item', $t);
+        $this->assertNotContains('auth_item_child', $t);
+        $this->assertNotContains('auth_assignment', $t);
     }
 }

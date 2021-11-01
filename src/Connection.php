@@ -807,7 +807,7 @@ class Connection extends Component
                     return $this->quoteColumnName($matches[3]);
                 }
 
-                return $this->quoteTableName($matches[2]);
+                return str_replace('%', $this->tablePrefix, $this->quoteTableName($matches[2]));
             },
             $sql
         );

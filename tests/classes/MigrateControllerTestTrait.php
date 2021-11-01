@@ -110,7 +110,7 @@ trait MigrateControllerTestTrait
             throw $e;
         }
 
-        return ob_get_clean();;
+        return ob_get_clean();
     }
 
     /**

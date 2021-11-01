@@ -22,7 +22,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @var Connection
      */
-    protected $conn;
+    protected static $conn;
 
 
     use FixtureTrait;
@@ -30,7 +30,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @return array|false|string
      */
-    protected function getDsn()
+    public static function getDsn()
     {
         // Docker support
         // Possible dsn: tcp://user:pass@127.0.0.1/?connect_timeout=5.0&max_retries=3
@@ -44,13 +44,13 @@ class TestCase extends \PHPUnit\Framework\TestCase
      * @return Connection
      * @throws \Exception
      */
-    public function getConnection()
+    public static function getConnection()
     {
-        if (!$this->conn) {
-            $this->conn = new Connection(['dsn' => $this->getDsn()]);
-            $this->conn->open();
+        if (!self::$conn) {
+            self::$conn = new Connection(['dsn' => self::getDsn()]);
+            self::$conn->open();
         }
-        return $this->conn;
+        return self::$conn;
     }
 
     /**
