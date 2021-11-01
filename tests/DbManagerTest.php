@@ -72,7 +72,7 @@ class DbManagerTest extends ManagerTestCase
 
     private $migrated = false;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->migrateControllerClass = EchoMigrateController::class;
