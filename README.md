@@ -15,7 +15,7 @@ Reqirements
 
 ![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/mhthnz/yii2-tarantool)
 ![Tarantool version](https://img.shields.io/badge/tarantool-%3E%3D%202.4.1-blue)
-![Yii2 version](https://img.shields.io/badge/yii2-%3E%3D%202.0.14-blue)
+![Yii2 version](https://img.shields.io/badge/yii2-%3E%3D%202.0.35-blue)
 
 Installation
 ------------
