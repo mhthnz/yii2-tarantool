@@ -104,7 +104,8 @@ trait MigrateControllerTestTrait
         ob_start();
         ob_implicit_flush(false);
         try {
-            $this->migrationExitCode = $controller->run($actionID, $args);
+            $resp = $controller->run($actionID, $args);
+            $this->migrationExitCode = $resp === null ? 0 : $resp; // Yii <= 2.0.40 compatability
         } catch (\Throwable $e) {
             ob_get_clean();
             throw $e;

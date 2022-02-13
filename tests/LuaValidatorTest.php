@@ -128,7 +128,10 @@ LUA;
 
         $model->field1 = 3;
         $this->assertFalse($model->validate());
-        $this->assertEquals(['field1' => ['Field1 is not valid.']], $model->getErrors());
+        $err = $model->getErrors();
+        $this->assertTrue(array_key_exists('field1', $err));
+        $this->assertTrue(count($err['field1']) > 0);
+        $this->checkRegex('/^Field\s*1 is not valid.$/i', array_shift($err['field1']));
 
         $model = new DynamicModel([
             'field1', 'field2'
@@ -194,7 +197,10 @@ LUA;
         $model->setLuaFunc($lua);
         $model->setDB($this->getDb());
         $this->assertFalse($model->validate());
-        $this->assertEquals(['field2' => ['Field2 is not valid.']], $model->getErrors());
+        $err = $model->getErrors();
+        $this->assertTrue(array_key_exists('field2', $err));
+        $this->assertTrue(count($err['field2']) > 0);
+        $this->checkRegex('/^Field\s*2 is not valid.$/i', array_shift($err['field2']));
 
         $model->clearErrors();
         $model->field2 = 2;
@@ -228,7 +234,10 @@ LUA;
 
         $model->field1 = 9999999999999999;
         $this->assertFalse($model->validate());
-        $this->assertEquals(['field1' => ['Field1 is not valid.']], $model->getErrors());
+        $err = $model->getErrors();
+        $this->assertTrue(array_key_exists('field1', $err));
+        $this->assertTrue(count($err['field1']) > 0);
+        $this->checkRegex('/^Field\s*1 is not valid.$/i', array_shift($err['field1']));
 
         $lua = <<<LUA
             function (value, params)
