@@ -149,7 +149,7 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
      */
     protected function loadTableSchema($name)
     {
-        $data = $this->db->createCommand('select "format", "id", "engine" from "_space" where "name" = :table', [':table' => $name])->queryOne();
+        $data = $this->db->createCommand('select "format", "id", "engine" from "_space" where "name" = :tableName', [':tableName' => $name])->queryOne();
 
         if ($data === false) {
             return null;
