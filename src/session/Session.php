@@ -1,12 +1,14 @@
 <?php
 
-namespace mhthnz\tarantool;
+namespace mhthnz\tarantool\session;
 
+use mhthnz\tarantool\ActiveRecord;
+use mhthnz\tarantool\session\models\SessionSpace;
 use Tarantool\Client\Schema\Operations;
 use Throwable;
 use Yii;
 use yii\base\InvalidConfigException;
-use yii\db\ActiveQuery;
+use yii\db\Query;
 
 class Session extends \yii\web\Session {
 	/** @var string Tarantool ActiveRecord class name for sessions.
@@ -26,7 +28,7 @@ class Session extends \yii\web\Session {
 	 * }
 	 * ```
 	 */
-	public $spaceClass;
+	public $spaceClass = SessionSpace::class;
 
 	/** @var ActiveRecord Tarantool Space Model for sessions */
 	private $spaceModel;
@@ -36,7 +38,7 @@ class Session extends \yii\web\Session {
 
 	/**
 	 * Initializes the Session component.
-	 * @throws InvalidConfigException if [[db]] is invalid.
+	 * @throws InvalidConfigException if [[spaceClass]] is invalid.
 	 */
 	public function init()
 	{
@@ -185,7 +187,7 @@ class Session extends \yii\web\Session {
 	/**
 	 * Generates a query to get the session from Tarantrool.
 	 * @param string $id The id of the session
-	 * @return ActiveRecord
+	 * @return Query
 	 */
 	protected function getReadQuery($id)
 	{

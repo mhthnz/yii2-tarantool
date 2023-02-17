@@ -89,4 +89,19 @@ trait DbTrait
         $this->getDb()->createCommand()->addForeignKey('fk-child-parent', ChildAR::tableName(), 'parent_id', ParentAR::tableName(),'id')->execute();
     }
 
+	public function createTableSession($opt = null)
+	{
+		$this->createTable('session', [
+			'id' => $this->string()->notNull(),
+			'expire' => $this->integer()->notNull(),
+			'data' => $this->text()->notNull(),
+
+			'CONSTRAINT "pk-session" PRIMARY KEY ("id")',
+		], $opt);
+	}
+
+	public function dropTableSession()
+	{
+		$this->getDb()->createCommand('DROP TABLE IF EXISTS "session"')->execute();
+	}
 }
