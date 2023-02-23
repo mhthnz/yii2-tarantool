@@ -745,7 +745,7 @@ INSERT INTO {{type}} ([[int_col]], [[char_col]], [[float_col]], [[blob_col]], [[
         $subquery = (new \yii\db\Query())
             ->select('bar')
             ->from('testCreateViewTable')
-            ->where(['>', 'bar', '5']);
+            ->where(['>', 'bar', 5]);
         if ($db->getSchema()->getTableSchema('testCreateView')) {
             $db->createCommand()->dropView('testCreateView')->execute();
         }

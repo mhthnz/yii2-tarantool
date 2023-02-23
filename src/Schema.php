@@ -125,7 +125,7 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
     {
         $where = "LENGTH(\"format\") > 1 AND substr(\"name\",1,1) != '_'";
         if (version_compare($this->db->version,  "2.10.0", ">=")) { // Array support trick
-            $where = "\"format\"[0] is not null AND substr(\"name\",1,1) != '_'";
+            $where = "\"format\"[1] is not null AND substr(\"name\",1,1) != '_'";
         }
         $result = $this->db->createCommand('select "name" from "_space" where ' . $where)->queryAll();
         $tableNames = [];
@@ -238,9 +238,9 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
     {
         $result = $this->db->createCommand('
         select "_index"."name", "_index"."parts", "_space"."format" from "_index", "_space"
-        where "_space"."name" = :table AND "_index"."id" = "_space"."id" 
+        where "_space"."name" = :tableName AND "_index"."id" = "_space"."id" 
         limit 1
-        ', [':table' => $tableName])->queryOne();
+        ', [':tableName' => $tableName])->queryOne();
 
         if ($result === false) {
             return null;

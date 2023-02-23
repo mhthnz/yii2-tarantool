@@ -64,11 +64,11 @@ class ClientTest extends TestCase
 
         // Eval
         $res = $client->evaluate("return box.stat()");
-        $this->assertCount(12, $res[0]);
+        $this->assertTrue(count($res[0]) == 12 || count($res[0]) == 15);
 
         // Call
         $res = $client->call('box.stat');
-        $this->assertCount(12, $res[0]);
+        $this->assertTrue(count($res[0]) == 12 || count($res[0]) == 15);
 
         // Execute query
         $res = $client->executeQuery('SELECT * FROM "myspace"')->count();

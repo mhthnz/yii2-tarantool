@@ -70,8 +70,11 @@ class ConnectionTest extends TestCase
      */
     public function testOpenConnectSchema($method, $args)
     {
+
         /** @var Connection $t */
         $t = \Yii::$app->tarantool;
+        $t->version = $this->getDb()->version; // Copy actual tarantool version to avoid errors. Dont do shadow connection opening
+        $this->getDb()->close();
         $this->assertFalse($t->isActive);
         $thrown = false;
         try {
