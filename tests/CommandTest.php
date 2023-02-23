@@ -679,7 +679,7 @@ INSERT INTO {{type}} ([[int_col]], [[char_col]], [[float_col]], [[blob_col]], [[
     public function testAutoRefreshTableSchema()
     {
         $db = $this->getConnection();
-        if ($db->version < 2.7) {
+        if (version_compare($db->version,  '2.7', "<")) {
             $this->markTestSkipped("Version less than 2.7");
         }
         $tableName = 'test';

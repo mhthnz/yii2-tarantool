@@ -542,7 +542,7 @@ CODE
 
     public function testAddColumn()
     {
-        if ($this->getDb()->version < 2.7) {
+        if (version_compare($this->getDb()->version,  '2.7', "<")) {
             $this->markTestSkipped("Tarantool version less than 2.7 doesn't support adding column");
         }
 

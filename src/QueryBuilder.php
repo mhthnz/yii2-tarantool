@@ -242,7 +242,7 @@ class QueryBuilder extends \yii\db\QueryBuilder
      */
     public function addColumn($table, $column, $type)
     {
-        if ($this->db->version < 2.7) {
+        if (version_compare($this->db->version,  '2.7', "<")) {
             throw new NotSupportedException("Tarantool version < 2.7 doesn't support adding column.");
         }
         return parent::addColumn($table, $column, $type);

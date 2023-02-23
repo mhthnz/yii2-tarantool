@@ -124,7 +124,7 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
     protected function findTableNames($schema = '')
     {
         $where = "LENGTH(\"format\") > 1 AND substr(\"name\",1,1) != '_'";
-        if ($this->db->version >= "2.10.0") { // Array support trick
+        if (version_compare($this->db->version,  "2.10.0", ">=")) { // Array support trick
             $where = "\"format\"[0] is not null AND substr(\"name\",1,1) != '_'";
         }
         $result = $this->db->createCommand('select "name" from "_space" where ' . $where)->queryAll();

@@ -403,7 +403,7 @@ class Migration extends Component implements MigrationInterface
      */
     public function addColumn($table, $column, $type)
     {
-        if ($this->getDb()->version < 2.7) {
+        if (version_compare($this->getDb()->version,  '2.7', "<")) {
             throw new NotSupportedException("Tarantool version less than 2.7 does't support adding column");
         }
         $time = $this->beginCommand("add column $column $type to table $table");

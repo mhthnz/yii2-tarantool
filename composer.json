@@ -35,5 +35,10 @@
         "psr-4": {
             "mhthnz\\tarantool\\tests\\": "tests/"
         }
+    },
+    "config": {
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true
+        }
     }
 }
