@@ -29,8 +29,8 @@ class NosqlCommandTest extends TestCase
             ]
         ]]);
         $this->dropConstraints();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
         $this->dropTables();
 
     }
@@ -41,7 +41,7 @@ class NosqlCommandTest extends TestCase
     protected function tearDown(): void
     {
         $this->dropSpacesIfExist(['myspace', 'myspace1', 'myspace2', 'myspace3']);
-        $this->getDb()->createNosqlCommand()->evaluate("box.schema.user.drop('tempuser',{if_exists=true})")->execute();
+        self::getDb()->createNosqlCommand()->evaluate("box.schema.user.drop('tempuser',{if_exists=true})")->execute();
         parent::tearDown();
     }
 
@@ -61,14 +61,14 @@ class NosqlCommandTest extends TestCase
             ['name' => 'mp', 'type' => 'map', 'is_nullable' => true],
         ];
 
-       $this->getDb()->createNosqlCommand()->createSpace('myspace', $format, 'memtx', ['id' => 1111])->execute();
+       self::getDb()->createNosqlCommand()->createSpace('myspace', $format, 'memtx', ['id' => 1111])->execute();
 
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space[1111]")->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space[1111]")->execute()->getResponseData();
         $this->assertEquals("memtx", $resp[0]["engine"]);
         $this->assertEquals("myspace", $resp[0]["name"]);
         $this->assertEquals(false, $resp[0]["temporary"]);
 
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space[1111]:format()")->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space[1111]:format()")->execute()->getResponseData();
         $fields = $resp[0];
         $this->assertCount(9, $fields);
 
@@ -104,53 +104,53 @@ class NosqlCommandTest extends TestCase
         $this->assertEquals(true, $fields[8]["is_nullable"]);
 
         // Drop space
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace")->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace")->execute()->getResponseData();
         $this->assertNotNull($resp[0]);
-        $this->getDb()->createNosqlCommand()->dropSpace('myspace')->execute()->getResponseData();
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace")->execute()->getResponseData();
+        self::getDb()->createNosqlCommand()->dropSpace('myspace')->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace")->execute()->getResponseData();
         $this->assertNull($resp[0]);
 
         // Empty schema space
-        $this->getDb()->createNosqlCommand()->createSpace('myspace1')->execute();
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->execute()->getResponseData();
+        self::getDb()->createNosqlCommand()->createSpace('myspace1')->execute();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->execute()->getResponseData();
         $this->assertEquals("memtx", $resp[0]["engine"]);
         $this->assertEquals("myspace1", $resp[0]["name"]);
         $this->assertEquals(false, $resp[0]["temporary"]);
 
         // Drop space
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->execute()->getResponseData();
         $this->assertNotNull($resp[0]);
-        $this->getDb()->createNosqlCommand()->dropSpace('myspace1')->execute()->getResponseData();
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->execute()->getResponseData();
+        self::getDb()->createNosqlCommand()->dropSpace('myspace1')->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->execute()->getResponseData();
         $this->assertNull($resp[0]);
 
         // Fixed field count vinyl
-        $this->getDb()->createNosqlCommand()->createSpace('myspace2', [], 'vinyl', ['field_count' => 3])->execute();
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace2")->execute()->getResponseData();
+        self::getDb()->createNosqlCommand()->createSpace('myspace2', [], 'vinyl', ['field_count' => 3])->execute();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace2")->execute()->getResponseData();
         $this->assertEquals("vinyl", $resp[0]["engine"]);
         $this->assertEquals("myspace2", $resp[0]["name"]);
         $this->assertEquals(3, $resp[0]["field_count"]);
         $this->assertEquals(false, $resp[0]["temporary"]);
 
         // Drop space
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace2")->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace2")->execute()->getResponseData();
         $this->assertNotNull($resp[0]);
-        $this->getDb()->createNosqlCommand()->dropSpace('myspace2')->execute()->getResponseData();
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace2")->execute()->getResponseData();
+        self::getDb()->createNosqlCommand()->dropSpace('myspace2')->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace2")->execute()->getResponseData();
         $this->assertNull($resp[0]);
 
         // Temporary
-        $this->getDb()->createNosqlCommand()->createSpace('myspace3', [['name' => 'id', 'type' => 'unsigned', 'is_nullable' => false], ['name' => 'name', 'type' => 'string', 'is_nullable' => false]], 'memtx', ['temporary' => true])->execute();
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace3")->execute()->getResponseData();
+        self::getDb()->createNosqlCommand()->createSpace('myspace3', [['name' => 'id', 'type' => 'unsigned', 'is_nullable' => false], ['name' => 'name', 'type' => 'string', 'is_nullable' => false]], 'memtx', ['temporary' => true])->execute();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace3")->execute()->getResponseData();
         $this->assertEquals("memtx", $resp[0]["engine"]);
         $this->assertEquals("myspace3", $resp[0]["name"]);
         $this->assertEquals(true, $resp[0]["temporary"]);
 
         // Drop space
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace3")->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace3")->execute()->getResponseData();
         $this->assertNotNull($resp[0]);
-        $this->getDb()->createNosqlCommand()->dropSpace('myspace3')->execute()->getResponseData();
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace3")->execute()->getResponseData();
+        self::getDb()->createNosqlCommand()->dropSpace('myspace3')->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace3")->execute()->getResponseData();
         $this->assertNull($resp[0]);
     }
 
@@ -168,8 +168,8 @@ class NosqlCommandTest extends TestCase
             ['name' => 'bin', 'type' => 'varbinary', 'is_nullable' => true],
         ];
 
-        $this->getDb()->createNosqlCommand()->createSpace('myspace', $format, 'memtx', ['id' => 1111])->execute();
-        $this->getDb()->createNosqlCommand()->createIndex('myspace', 'myspacepk', ['id' => 'unsigned'], true)->execute();
+        self::getDb()->createNosqlCommand()->createSpace('myspace', $format, 'memtx', ['id' => 1111])->execute();
+        self::getDb()->createNosqlCommand()->createIndex('myspace', 'myspacepk', ['id' => 'unsigned'], true)->execute();
         $blobCol = pack("nvc*", 0x1234, 0x5678, 65, 66);
         $row = [
             1,
@@ -184,13 +184,13 @@ class NosqlCommandTest extends TestCase
         ];
         $insert = $row;
         $insert[8] =  new Bin($row[8]);
-        $resp = $this->getDb()->createNosqlCommand()->insert('myspace', $insert)->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->insert('myspace', $insert)->execute()->getResponseData();
         $this->assertEquals($row, $resp[0]);
-        $resp = $this->getDb()->createNosqlCommand()->call("box.space.myspace:get", [1])->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->call("box.space.myspace:get", [1])->execute()->getResponseData();
         $this->assertEquals($row, $resp[0]);
 
         // Update
-        $resp = $this->getDb()->createNosqlCommand()->update('myspace', [1], Operations::add(3, 1)->andSet(1, "not my name")->andSet(6, 10)->andSubtract(5, 1.0)->andSet(4, false))->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->update('myspace', [1], Operations::add(3, 1)->andSet(1, "not my name")->andSet(6, 10)->andSubtract(5, 1.0)->andSet(4, false))->execute()->getResponseData();
         $newRow = [
             1,
             "not my name",
@@ -205,7 +205,7 @@ class NosqlCommandTest extends TestCase
         $this->assertEquals($newRow, $resp[0]);
 
         // Upsert
-        $this->getDb()->createNosqlCommand()->upsert('myspace', [
+        self::getDb()->createNosqlCommand()->upsert('myspace', [
             1,
             "not my name",
             [1, 2, 3],
@@ -223,10 +223,10 @@ class NosqlCommandTest extends TestCase
         $updatedRow = $newRow;
         $updatedRow[6] = 11;
 
-        $resp = $this->getDb()->createNosqlCommand()->call("box.space.myspace:get", [1])->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->call("box.space.myspace:get", [1])->execute()->getResponseData();
         $this->assertEquals($updatedRow, $resp[0]);
 
-        $this->getDb()->createNosqlCommand()->upsert('myspace', [
+        self::getDb()->createNosqlCommand()->upsert('myspace', [
             2,
             "not my name",
             [1, 2, 3],
@@ -242,7 +242,7 @@ class NosqlCommandTest extends TestCase
         )->execute();
 
         $newRow[0] = 2;
-        $resp = $this->getDb()->createNosqlCommand()->call("box.space.myspace:get", [2])->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->call("box.space.myspace:get", [2])->execute()->getResponseData();
         $this->assertEquals($newRow, $resp[0]);
 
         // Replace
@@ -259,17 +259,17 @@ class NosqlCommandTest extends TestCase
         ];
         $replacedRow = $replacedRowRaw;
         $replacedRow[8] = new Bin($replacedRow[8]);
-        $resp = $this->getDb()->createNosqlCommand()->replace('myspace', $replacedRow)->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->replace('myspace', $replacedRow)->execute()->getResponseData();
         $this->assertEquals($replacedRowRaw, $resp[0]);
-        $resp = $this->getDb()->createNosqlCommand()->call("box.space.myspace:get", [2])->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->call("box.space.myspace:get", [2])->execute()->getResponseData();
         $this->assertEquals($replacedRowRaw, $resp[0]);
         $replacedRow[0] = 3;
-        $resp = $this->getDb()->createNosqlCommand()->replace('myspace', $replacedRow)->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->replace('myspace', $replacedRow)->execute()->getResponseData();
         $replacedRowRaw[0] = 3;
         $this->assertEquals($replacedRowRaw, $resp[0]);
-        $resp = $this->getDb()->createNosqlCommand()->delete('myspace', [1])->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->delete('myspace', [1])->execute()->getResponseData();
         $this->assertEquals($updatedRow, $resp[0]);
-        $resp = $this->getDb()->createNosqlCommand()->delete('myspace', [1])->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->delete('myspace', [1])->execute()->getResponseData();
         $this->assertEmpty($resp);
     }
 
@@ -286,9 +286,9 @@ class NosqlCommandTest extends TestCase
         ];
 
         // pk
-        $this->getDb()->createNosqlCommand()->createSpace('myspace', $format)->execute();
-        $this->getDb()->createNosqlCommand()->createIndex('myspace', 'myspacepk', ['id' => 'unsigned'], true, 'hash')->execute();
-        $resp = $this->getDb()->createNosqlCommand()->evaluate('return box.space.myspace.index')->execute()->getResponseData();
+        self::getDb()->createNosqlCommand()->createSpace('myspace', $format)->execute();
+        self::getDb()->createNosqlCommand()->createIndex('myspace', 'myspacepk', ['id' => 'unsigned'], true, 'hash')->execute();
+        $resp = self::getDb()->createNosqlCommand()->evaluate('return box.space.myspace.index')->execute()->getResponseData();
         $this->assertEquals(true, $resp[0][0]['unique']);
         $this->assertEquals('HASH', strtoupper($resp[0][0]['type']));
         $this->assertEquals('myspacepk', $resp[0][0]['name']);
@@ -299,8 +299,8 @@ class NosqlCommandTest extends TestCase
         ]], $resp[0][0]['parts']);
 
         // tree composite
-        $this->getDb()->createNosqlCommand()->createIndex('myspace', 'compositeindex', ['int' => 'integer', 'int1' => 'integer'])->execute();
-        $resp = $this->getDb()->createNosqlCommand()->evaluate('return box.space.myspace.index.compositeindex')->execute()->getResponseData();
+        self::getDb()->createNosqlCommand()->createIndex('myspace', 'compositeindex', ['int' => 'integer', 'int1' => 'integer'])->execute();
+        $resp = self::getDb()->createNosqlCommand()->evaluate('return box.space.myspace.index.compositeindex')->execute()->getResponseData();
         $this->assertEquals(false, $resp[0]['unique']);
         $this->assertEquals('TREE', strtoupper($resp[0]['type']));
         $this->assertEquals('compositeindex', $resp[0]['name']);
@@ -315,13 +315,13 @@ class NosqlCommandTest extends TestCase
         ]], $resp[0]['parts']);
 
         // drop index
-        $this->getDb()->createNosqlCommand()->dropIndex('myspace', 'compositeindex')->execute();
-        $resp = $this->getDb()->createNosqlCommand()->evaluate('return box.space.myspace.index.compositeindex')->execute()->getResponseData();
+        self::getDb()->createNosqlCommand()->dropIndex('myspace', 'compositeindex')->execute();
+        $resp = self::getDb()->createNosqlCommand()->evaluate('return box.space.myspace.index.compositeindex')->execute()->getResponseData();
         $this->assertNull($resp[0]);
 
         // rtree index
-        $this->getDb()->createNosqlCommand()->createIndex('myspace', 'arrindex', ['arr' => 'array'], false, 'rtree')->execute();
-        $resp = $this->getDb()->createNosqlCommand()->evaluate('return box.space.myspace.index.arrindex')->execute()->getResponseData();
+        self::getDb()->createNosqlCommand()->createIndex('myspace', 'arrindex', ['arr' => 'array'], false, 'rtree')->execute();
+        $resp = self::getDb()->createNosqlCommand()->evaluate('return box.space.myspace.index.arrindex')->execute()->getResponseData();
         $this->assertEquals('RTREE', strtoupper($resp[0]['type']));
         $this->assertEquals('arrindex', $resp[0]['name']);
         $this->assertEquals([[
@@ -331,8 +331,8 @@ class NosqlCommandTest extends TestCase
         ]], $resp[0]['parts']);
 
         // drop index
-        $this->getDb()->createNosqlCommand()->dropIndex('myspace', 'arrindex')->execute();
-        $resp = $this->getDb()->createNosqlCommand()->evaluate('return box.space.myspace.index.arrindex')->execute()->getResponseData();
+        self::getDb()->createNosqlCommand()->dropIndex('myspace', 'arrindex')->execute();
+        $resp = self::getDb()->createNosqlCommand()->evaluate('return box.space.myspace.index.arrindex')->execute()->getResponseData();
         $this->assertNull($resp[0]);
     }
 
@@ -343,17 +343,17 @@ class NosqlCommandTest extends TestCase
             ['name' => 'name', 'type' => 'string', 'is_nullable' => false],
         ];
 
-        $this->getDb()->createNosqlCommand()->createSpace('myspace', $format)->execute();
-        $this->getDb()->createNosqlCommand()->createIndex('myspace', 'pk', ['id' => 'unsigned'], true)->execute();
+        self::getDb()->createNosqlCommand()->createSpace('myspace', $format)->execute();
+        self::getDb()->createNosqlCommand()->createIndex('myspace', 'pk', ['id' => 'unsigned'], true)->execute();
         foreach (range(1, 10) as $val) {
-            $this->getDb()->createNosqlCommand()->insert('myspace', [$val, "text " . $val])->execute();
+            self::getDb()->createNosqlCommand()->insert('myspace', [$val, "text " . $val])->execute();
         }
-        $resp = $this->getDb()->createNosqlCommand()->call('box.space.myspace:count')->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->call('box.space.myspace:count')->execute()->getResponseData();
         $this->assertEquals(10, $resp[0]);
 
-        $this->getDb()->createNosqlCommand()->truncateSpace('myspace')->execute();
+        self::getDb()->createNosqlCommand()->truncateSpace('myspace')->execute();
 
-        $resp = $this->getDb()->createNosqlCommand()->call('box.space.myspace:count')->execute()->getResponseData();
+        $resp = self::getDb()->createNosqlCommand()->call('box.space.myspace:count')->execute()->getResponseData();
         $this->assertEquals(0, $resp[0]);
     }
 
@@ -362,63 +362,63 @@ class NosqlCommandTest extends TestCase
         $this->makeSpaceForCmd();
 
         // Total count
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(8, $cmd->count()->queryScalar());
         $this->assertEquals(8, $cmd->count()->queryOne());
 
         // Primary key
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [1], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [1], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(1, $cmd->count()->queryScalar());
         $this->assertEquals(1, $cmd->count()->queryOne());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [111], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [111], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(0, $cmd->count()->queryScalar());
         $this->assertEquals(0, $cmd->count()->queryOne());
 
         // String index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 3"], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 3"], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(2, $cmd->count()->queryScalar());
         $this->assertEquals(2, $cmd->count()->queryOne());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 22"], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 22"], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(4, $cmd->count()->queryScalar());
         $this->assertEquals(4, $cmd->count()->queryOne());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text"], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text"], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(0, $cmd->count()->queryScalar());
         $this->assertEquals(0, $cmd->count()->queryOne());
 
         // Int index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 2, [11], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 2, [11], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(3, $cmd->count()->queryScalar());
         $this->assertEquals(3, $cmd->count()->queryOne());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 2, [15], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 2, [15], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(1, $cmd->count()->queryScalar());
         $this->assertEquals(1, $cmd->count()->queryOne());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 2, [111], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 2, [111], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(0, $cmd->count()->queryScalar());
         $this->assertEquals(0, $cmd->count()->queryOne());
 
         // Composite index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [11], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [11], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(3, $cmd->count()->queryScalar());
         $this->assertEquals(3, $cmd->count()->queryOne());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [11, 13], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [11, 13], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(2, $cmd->count()->queryScalar());
         $this->assertEquals(2, $cmd->count()->queryOne());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [12, 14], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [12, 14], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(1, $cmd->count()->queryScalar());
         $this->assertEquals(1, $cmd->count()->queryOne());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [110], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [110], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(0, $cmd->count()->queryScalar());
         $this->assertEquals(0, $cmd->count()->queryOne());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [110, 111], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [110, 111], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(0, $cmd->count()->queryScalar());
         $this->assertEquals(0, $cmd->count()->queryOne());
     }
@@ -428,48 +428,48 @@ class NosqlCommandTest extends TestCase
         $this->makeSpaceForCmd();
 
         // Default index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(8, $cmd->max()->queryOne()[0]);
 
         // Primary key
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [1], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [1], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(1, $cmd->max()->queryOne()[0]);
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [111], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [111], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertNull($cmd->max()->queryOne());
 
         // String index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(8, $cmd->max()->queryScalar());
         $this->assertEquals("text 3", $cmd->max()->queryOne()[1]);
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["aaaaaa"], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["aaaaaa"], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertNull($cmd->max()->queryOne());
 
 
         // Int index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 2, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 2, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(8, $cmd->max()->queryScalar());
         $this->assertEquals(15, $cmd->max()->queryOne()[2]);
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 2, [11111], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 2, [11111], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertNull($cmd->max()->queryOne());
 
 
         // Composite index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [11], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [11], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(11, $cmd->max()->queryOne()[2]);
         $this->assertEquals(14, $cmd->max()->queryOne()[3]);
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(15, $cmd->max()->queryOne()[2]);
         $this->assertEquals(0, $cmd->max()->queryOne()[3]);
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [12], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [12], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(12, $cmd->max()->queryOne()[2]);
         $this->assertEquals(15, $cmd->max()->queryOne()[3]);
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [1111], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [1111], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertNull($cmd->max()->queryOne());
     }
 
@@ -478,48 +478,48 @@ class NosqlCommandTest extends TestCase
         $this->makeSpaceForCmd();
 
         // Default index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(1, $cmd->min()->queryOne()[0]);
 
         // Primary key
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [8], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [8], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(8, $cmd->min()->queryOne()[0]);
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [111], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [111], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertNull($cmd->min()->queryOne());
 
         // String index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(1, $cmd->min()->queryScalar());
         $this->assertEquals("text 1", $cmd->min()->queryOne()[1]);
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["aaaaaa"], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["aaaaaa"], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertNull($cmd->min()->queryOne());
 
 
         // Int index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 2, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 2, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(1, $cmd->min()->queryScalar());
         $this->assertEquals(11, $cmd->min()->queryOne()[2]);
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 2, [11111], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 2, [11111], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertNull($cmd->min()->queryOne());
 
 
         // Composite index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [13], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [13], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(13, $cmd->min()->queryOne()[2]);
         $this->assertEquals(0, $cmd->min()->queryOne()[3]);
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(11, $cmd->min()->queryOne()[2]);
         $this->assertEquals(13, $cmd->min()->queryOne()[3]);
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [12], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [12], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(12, $cmd->min()->queryOne()[2]);
         $this->assertEquals(11, $cmd->min()->queryOne()[3]);
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [1111], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [1111], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertNull($cmd->min()->queryOne());
     }
 
@@ -528,19 +528,19 @@ class NosqlCommandTest extends TestCase
         $this->makeSpaceForCmd();
 
         // Default index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertNotEquals($cmd->random(1000)->queryOne(), $cmd->random(1)->queryOne());
 
         // String index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertNotEquals($cmd->random(1000)->queryOne(), $cmd->random(1)->queryOne());
 
         // Int index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 2, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 2, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertNotEquals($cmd->random(1000)->queryOne(), $cmd->random(1)->queryOne());
 
         // Composite index
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertNotEquals($cmd->random(1000)->queryOne(), $cmd->random(1)->queryOne());
     }
 
@@ -549,63 +549,63 @@ class NosqlCommandTest extends TestCase
         $this->makeSpaceForCmd();
 
         // Select
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals([1, 'text 1', 11, 13], $cmd->queryOne());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 1, 1, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 1, 1, IteratorTypes::EQ));
         $this->assertEquals([2, 'text 2', 11, 13], $cmd->queryOne());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [3], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [3], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals([3, 'text 22', 11, 14], $cmd->queryOne());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 22"], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 22"], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals([3, 'text 22', 11, 14], $cmd->queryOne());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 22"], 1, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 22"], 1, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals([4, 'text 22', 12, 15], $cmd->queryOne());
 
         // Call
-        $cmd = $this->getDb()->createNosqlCommand(new CallRequest('box.space.myspace:format'));
+        $cmd = self::getDb()->createNosqlCommand(new CallRequest('box.space.myspace:format'));
         $this->assertEquals(
             ['type' => 'unsigned', 'name' => 'id', 'is_nullable' => false],
          $cmd->queryOne());
 
-        $resp = $this->getDb()->createNosqlCommand(new CallRequest('box.stat'))->queryOne();
+        $resp = self::getDb()->createNosqlCommand(new CallRequest('box.stat'))->queryOne();
         $this->assertArrayHasKey('total', $resp);
         $this->assertArrayHasKey('rps', $resp);
 
-        $resp = $this->getDb()->createNosqlCommand(new CallRequest('box.space.myspace:select'))->queryOne();
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ))->queryOne();
+        $resp = self::getDb()->createNosqlCommand(new CallRequest('box.space.myspace:select'))->queryOne();
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ))->queryOne();
         $this->assertEquals($resp, $cmd);
 
         // Evaluate
-        $cmd = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:format()'));
+        $cmd = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:format()'));
         $this->assertEquals(
             ['type' => 'unsigned', 'name' => 'id', 'is_nullable' => false],
             $cmd->queryOne());
 
-        $resp = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.stat()'))->queryOne();
+        $resp = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.stat()'))->queryOne();
         $this->assertArrayHasKey('total', $resp);
         $this->assertArrayHasKey('rps', $resp);
 
-        $resp = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:select()'))->queryOne();
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ))->queryOne();
+        $resp = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:select()'))->queryOne();
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ))->queryOne();
         $this->assertEquals($resp, $cmd);
 
         // Insert
-        $resp = $this->getDb()->createNosqlCommand(new InsertRequest(123, [10, "what", 123, 91]))->queryOne();
+        $resp = self::getDb()->createNosqlCommand(new InsertRequest(123, [10, "what", 123, 91]))->queryOne();
         $this->assertEquals([10, "what", 123, 91], $resp);
 
         // Update
-        $resp = $this->getDb()->createNosqlCommand(new UpdateRequest(123, 0, [10], Operations::add(2, 100)->toArray()))->queryOne();
+        $resp = self::getDb()->createNosqlCommand(new UpdateRequest(123, 0, [10], Operations::add(2, 100)->toArray()))->queryOne();
         $this->assertEquals([10, "what", 223, 91], $resp);
-        $resp = $this->getDb()->createNosqlCommand(new UpdateRequest(123, 0, [1011], Operations::add(2, 100)->toArray()))->queryOne();
+        $resp = self::getDb()->createNosqlCommand(new UpdateRequest(123, 0, [1011], Operations::add(2, 100)->toArray()))->queryOne();
         $this->assertNull($resp);
 
         // Upsert doesn't respond
-        $resp = $this->getDb()->createNosqlCommand(new UpsertRequest(123, [10, "what", 223, 91], Operations::add(2, 100)->toArray()))->queryOne();
+        $resp = self::getDb()->createNosqlCommand(new UpsertRequest(123, [10, "what", 223, 91], Operations::add(2, 100)->toArray()))->queryOne();
         $this->assertNull($resp);
 
         // Replace
-        $resp = $this->getDb()->createNosqlCommand(new ReplaceRequest(123, [10, "what111", 1223, 0]))->queryOne();
+        $resp = self::getDb()->createNosqlCommand(new ReplaceRequest(123, [10, "what111", 1223, 0]))->queryOne();
         $this->assertEquals([10, "what111", 1223, 0], $resp);
-        $resp = $this->getDb()->createNosqlCommand(new ReplaceRequest(123, [101, "what111", 1223, 0]))->queryOne();
+        $resp = self::getDb()->createNosqlCommand(new ReplaceRequest(123, [101, "what111", 1223, 0]))->queryOne();
         $this->assertEquals([101, "what111", 1223, 0], $resp);
     }
 
@@ -614,14 +614,14 @@ class NosqlCommandTest extends TestCase
         $this->makeSpaceForCmd();
 
         // Select
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [1], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [1], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals([1, 'text 1', 11, 13], $cmd->queryGet());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [2], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [2], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals([2, "text 2", 11, 13], $cmd->queryGet());
 
         // Trying to use non-unique index (it's forbidden)
         $thrown = false;
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 1"], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 1"], 0, PHP_INT_MAX, IteratorTypes::EQ));
         try {
             $cmd->queryGet();
         } catch (\Throwable $e) {
@@ -635,7 +635,7 @@ class NosqlCommandTest extends TestCase
         $this->makeSpaceForCmd();
 
         // Select
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals([
             [1, "text 1", 11, 13],
             [2, "text 2", 11, 13],
@@ -647,7 +647,7 @@ class NosqlCommandTest extends TestCase
             [8, "text 3", 15, 0],
         ], $cmd->queryAll());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 22"], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 22"], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals([
             [3, "text 22", 11, 14],
             [4, "text 22", 12, 15],
@@ -655,19 +655,19 @@ class NosqlCommandTest extends TestCase
             [7, "text 22", 13, 0],
         ], $cmd->queryAll());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 22"], 0, 2, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 22"], 0, 2, IteratorTypes::EQ));
         $this->assertEquals([
             [3, "text 22", 11, 14],
             [4, "text 22", 12, 15],
         ], $cmd->queryAll());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 22"], 2, 1, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 22"], 2, 1, IteratorTypes::EQ));
         $this->assertEquals([
             [5, "text 22", 12, 14],
         ], $cmd->queryAll());
 
         // Call
-        $cmd = $this->getDb()->createNosqlCommand(new CallRequest('box.space.myspace:format'));
+        $cmd = self::getDb()->createNosqlCommand(new CallRequest('box.space.myspace:format'));
         $this->assertEquals([
             ['type' => 'unsigned', 'name' => 'id', 'is_nullable' => false],
             ['type' => 'string', 'name' => 'name', 'is_nullable' => false],
@@ -675,17 +675,17 @@ class NosqlCommandTest extends TestCase
             ['type' => 'integer', 'name' => 'field1', 'is_nullable' => true],
         ], $cmd->queryAll());
 
-        $resp = $this->getDb()->createNosqlCommand(new CallRequest('box.stat'))->queryAll();
+        $resp = self::getDb()->createNosqlCommand(new CallRequest('box.stat'))->queryAll();
         $this->arrayHasKey('DELETE', $resp);
         $this->arrayHasKey('INSERT', $resp);
         $this->arrayHasKey('UPDATE', $resp);
 
-        $resp = $this->getDb()->createNosqlCommand(new CallRequest('box.space.myspace:select'))->queryAll();
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ))->queryAll();
+        $resp = self::getDb()->createNosqlCommand(new CallRequest('box.space.myspace:select'))->queryAll();
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ))->queryAll();
         $this->assertEquals($resp, $cmd);
 
         // Eval
-        $cmd = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:format()'));
+        $cmd = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:format()'));
         $this->assertEquals(
             [
                 ['type' => 'unsigned', 'name' => 'id', 'is_nullable' => false],
@@ -695,13 +695,13 @@ class NosqlCommandTest extends TestCase
             ],
             $cmd->queryAll());
 
-        $resp = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.stat()'))->queryAll();
+        $resp = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.stat()'))->queryAll();
         $this->arrayHasKey('DELETE', $resp);
         $this->arrayHasKey('INSERT', $resp);
         $this->arrayHasKey('UPDATE', $resp);
 
-        $resp = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:select()'))->queryAll();
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ))->queryAll();
+        $resp = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:select()'))->queryAll();
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ))->queryAll();
         $this->assertEquals($resp, $cmd);
 
     }
@@ -711,7 +711,7 @@ class NosqlCommandTest extends TestCase
         $this->makeSpaceForCmd();
 
         // Select
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals([
             1,
             2,
@@ -723,7 +723,7 @@ class NosqlCommandTest extends TestCase
             8,
         ], $cmd->queryColumn());
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals([
             "text 1",
             "text 2",
@@ -735,7 +735,7 @@ class NosqlCommandTest extends TestCase
             "text 3",
         ], $cmd->queryColumn(1));
 
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals([
             11,
             11,
@@ -748,7 +748,7 @@ class NosqlCommandTest extends TestCase
         ], $cmd->queryColumn(2));
 
         // Call
-        $resp = $this->getDb()->createNosqlCommand(new CallRequest('box.space.myspace:select'))->queryColumn();
+        $resp = self::getDb()->createNosqlCommand(new CallRequest('box.space.myspace:select'))->queryColumn();
         $this->assertEquals([
             1,
             2,
@@ -760,7 +760,7 @@ class NosqlCommandTest extends TestCase
             8,
         ], $resp);
 
-        $resp = $this->getDb()->createNosqlCommand(new CallRequest('box.space.myspace:select'))->queryColumn(1);
+        $resp = self::getDb()->createNosqlCommand(new CallRequest('box.space.myspace:select'))->queryColumn(1);
         $this->assertEquals([
             "text 1",
             "text 2",
@@ -772,7 +772,7 @@ class NosqlCommandTest extends TestCase
             "text 3",
         ], $resp);
 
-        $resp = $this->getDb()->createNosqlCommand(new CallRequest('box.space.myspace:select'))->queryColumn(2);
+        $resp = self::getDb()->createNosqlCommand(new CallRequest('box.space.myspace:select'))->queryColumn(2);
         $this->assertEquals([
             11,
             11,
@@ -785,7 +785,7 @@ class NosqlCommandTest extends TestCase
         ], $resp);
 
         // Eval
-        $resp = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:select()'))->queryColumn();
+        $resp = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:select()'))->queryColumn();
         $this->assertEquals([
             1,
             2,
@@ -797,7 +797,7 @@ class NosqlCommandTest extends TestCase
             8,
         ], $resp);
 
-        $resp = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:select()'))->queryColumn(1);
+        $resp = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:select()'))->queryColumn(1);
         $this->assertEquals([
             "text 1",
             "text 2",
@@ -809,7 +809,7 @@ class NosqlCommandTest extends TestCase
             "text 3",
         ], $resp);
 
-        $resp = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:select()'))->queryColumn(2);
+        $resp = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:select()'))->queryColumn(2);
         $this->assertEquals([
             11,
             11,
@@ -821,10 +821,10 @@ class NosqlCommandTest extends TestCase
             15,
         ], $resp);
 
-        $cmd = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:format()'));
+        $cmd = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:format()'));
         $this->assertEmpty($cmd->queryColumn());
 
-        $resp = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.stat()'))->queryColumn();
+        $resp = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.stat()'))->queryColumn();
         $this->assertEmpty($resp);
     }
 
@@ -833,40 +833,40 @@ class NosqlCommandTest extends TestCase
         $this->makeSpaceForCmd();
 
         // Select
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(1, $cmd->queryScalar());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [3], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [3], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(3, $cmd->queryScalar());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 3"], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 3"], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals(6, $cmd->queryScalar());
 
         // Call
-        $cmd = $this->getDb()->createNosqlCommand(new CallRequest('box.space.myspace:format'));
+        $cmd = self::getDb()->createNosqlCommand(new CallRequest('box.space.myspace:format'));
         $this->assertEquals('unsigned', $cmd->queryScalar());
 
-        $resp = $this->getDb()->createNosqlCommand(new CallRequest('box.stat'))->queryScalar();
+        $resp = self::getDb()->createNosqlCommand(new CallRequest('box.stat'))->queryScalar();
         $this->arrayHasKey('DELETE', $resp);
         $this->arrayHasKey('INSERT', $resp);
         $this->arrayHasKey('UPDATE', $resp);
 
-        $resp = $this->getDb()->createNosqlCommand(new CallRequest('box.space.myspace:select'))->queryScalar();
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ))->queryScalar();
+        $resp = self::getDb()->createNosqlCommand(new CallRequest('box.space.myspace:select'))->queryScalar();
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ))->queryScalar();
         $this->assertEquals($resp, $cmd);
 
         // Evaluate
-        $cmd = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:format()'));
+        $cmd = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:format()'));
         $this->assertEquals('unsigned', $cmd->queryScalar());
 
-        $resp = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.stat()'))->queryScalar();
+        $resp = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.stat()'))->queryScalar();
         $this->arrayHasKey('DELETE', $resp);
         $this->arrayHasKey('INSERT', $resp);
         $this->arrayHasKey('UPDATE', $resp);
 
-        $resp = $this->getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:select()'))->queryScalar();
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ))->queryScalar();
+        $resp = self::getDb()->createNosqlCommand(new EvaluateRequest('return box.space.myspace:select()'))->queryScalar();
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ))->queryScalar();
         $this->assertEquals($resp, $cmd);
 
-        $resp = $this->getDb()->createNosqlCommand(new EvaluateRequest('return 123'))->queryScalar();
+        $resp = self::getDb()->createNosqlCommand(new EvaluateRequest('return 123'))->queryScalar();
         $this->assertEquals(123, $resp);
     }
 
@@ -875,58 +875,58 @@ class NosqlCommandTest extends TestCase
         $this->makeSpaceForCmd();
 
         // Select
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals('box.space[123].index[0]:select({}, {iterator=EQ})', $cmd->getStringRequest());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [3], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [3], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals('box.space[123].index[0]:select({3}, {iterator=EQ})', $cmd->getStringRequest());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 3"], 0, PHP_INT_MAX, IteratorTypes::EQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 3"], 0, PHP_INT_MAX, IteratorTypes::EQ));
         $this->assertEquals('box.space[123].index[1]:select({\'text 3\'}, {iterator=EQ})', $cmd->getStringRequest());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::REQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [], 0, PHP_INT_MAX, IteratorTypes::REQ));
         $this->assertEquals('box.space[123].index[0]:select({}, {iterator=REQ})', $cmd->getStringRequest());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 0, [3], 0, PHP_INT_MAX, IteratorTypes::LE));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 0, [3], 0, PHP_INT_MAX, IteratorTypes::LE));
         $this->assertEquals('box.space[123].index[0]:select({3}, {iterator=LE})', $cmd->getStringRequest());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 3"], 0, PHP_INT_MAX, IteratorTypes::GT));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 1, ["text 3"], 0, PHP_INT_MAX, IteratorTypes::GT));
         $this->assertEquals('box.space[123].index[1]:select({\'text 3\'}, {iterator=GT})', $cmd->getStringRequest());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [11, 13], 0, PHP_INT_MAX, IteratorTypes::REQ));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [11, 13], 0, PHP_INT_MAX, IteratorTypes::REQ));
         $this->assertEquals('box.space[123].index[3]:select({11, 13}, {iterator=REQ})', $cmd->getStringRequest());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [12], 0, PHP_INT_MAX, IteratorTypes::LE));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [12], 0, PHP_INT_MAX, IteratorTypes::LE));
         $this->assertEquals('box.space[123].index[3]:select({12}, {iterator=LE})', $cmd->getStringRequest());
-        $cmd = $this->getDb()->createNosqlCommand(new SelectRequest(123, 3, [15, 0], 0, PHP_INT_MAX, IteratorTypes::GT));
+        $cmd = self::getDb()->createNosqlCommand(new SelectRequest(123, 3, [15, 0], 0, PHP_INT_MAX, IteratorTypes::GT));
         $this->assertEquals('box.space[123].index[3]:select({15, 0}, {iterator=GT})', $cmd->getStringRequest());
 
 
         // Insert
-        $cmd = $this->getDb()->createNosqlCommand(new InsertRequest(123, [10, "what", 123, 91]));
+        $cmd = self::getDb()->createNosqlCommand(new InsertRequest(123, [10, "what", 123, 91]));
         $this->assertEquals('box.space[123]:insert({10, \'what\', 123, 91})', $cmd->getStringRequest());
 
         // Update
-        $cmd = $this->getDb()->createNosqlCommand(new UpdateRequest(123, 0, [10], Operations::add(2, 100)->andSet(1, "text")->toArray()));
+        $cmd = self::getDb()->createNosqlCommand(new UpdateRequest(123, 0, [10], Operations::add(2, 100)->andSet(1, "text")->toArray()));
         $this->assertEquals("box.space[123].index[0]:update({10}, {{'+', 2, 100}, {'=', 1, 'text'}})", $cmd->getStringRequest());
-        $cmd = $this->getDb()->createNosqlCommand(new UpdateRequest(123, 0, [1011], Operations::add(2, 100)->andSubtract(3, 10)->toArray()));
+        $cmd = self::getDb()->createNosqlCommand(new UpdateRequest(123, 0, [1011], Operations::add(2, 100)->andSubtract(3, 10)->toArray()));
         $this->assertEquals("box.space[123].index[0]:update({1011}, {{'+', 2, 100}, {'-', 3, 10}})", $cmd->getStringRequest());
 
         // Upsert
-        $cmd = $this->getDb()->createNosqlCommand(new UpsertRequest(123, [10, "what", 223, 91], Operations::add(2, 100)->toArray()));
+        $cmd = self::getDb()->createNosqlCommand(new UpsertRequest(123, [10, "what", 223, 91], Operations::add(2, 100)->toArray()));
         $this->assertEquals("box.space[123]:upsert({10, 'what', 223, 91}, {{'+', 2, 100}})", $cmd->getStringRequest());
 
         // Replace
-        $cmd = $this->getDb()->createNosqlCommand(new ReplaceRequest(123, [10, "what111", 1223, 0]));
+        $cmd = self::getDb()->createNosqlCommand(new ReplaceRequest(123, [10, "what111", 1223, 0]));
         $this->assertEquals("box.space[123]:replace({10, 'what111', 1223, 0})", $cmd->getStringRequest());
 
         // Call
-        $cmd = $this->getDb()->createNosqlCommand(new CallRequest("box.space.myspace:format"));
+        $cmd = self::getDb()->createNosqlCommand(new CallRequest("box.space.myspace:format"));
         $this->assertEquals("CALL box.space.myspace:format()", $cmd->getStringRequest());
-        $cmd = $this->getDb()->createNosqlCommand(new CallRequest("box.space.myspace:select", [1]));
+        $cmd = self::getDb()->createNosqlCommand(new CallRequest("box.space.myspace:select", [1]));
         $this->assertEquals("CALL box.space.myspace:select({1})", $cmd->getStringRequest());
 
         // Eval
-        $cmd = $this->getDb()->createNosqlCommand(new EvaluateRequest("return box.space.myspace:format()"));
+        $cmd = self::getDb()->createNosqlCommand(new EvaluateRequest("return box.space.myspace:format()"));
         $this->assertEquals("EVAL return box.space.myspace:format()", $cmd->getStringRequest());
-        $cmd = $this->getDb()->createNosqlCommand(new EvaluateRequest("return box.space.myspace:select(...)", [1]));
+        $cmd = self::getDb()->createNosqlCommand(new EvaluateRequest("return box.space.myspace:select(...)", [1]));
         $this->assertEquals("EVAL return box.space.myspace:select(...) | args: {1}", $cmd->getStringRequest());
 
         // Test assoc params create table
-        $req = $this->getDb()->createNosqlCommand()->createSpace('space', [
+        $req = self::getDb()->createNosqlCommand()->createSpace('space', [
             ['name' => 'id', 'type' => 'unsigned', 'is_nullable' => false],
             ['name' => 'name', 'type' => 'string', 'is_nullable' => true],
             ['name' => 'date', 'type' => 'string', 'is_nullable' => false],
@@ -944,7 +944,7 @@ class NosqlCommandTest extends TestCase
         // Expecting exception
         $thrown = false;
         $message = "Lua encoding error, you may want to add to your tarantool config:";
-        $conn = new Connection(['dsn' => $this->getDsn(), 'handleLuaEncodingErrors' => false]);
+        $conn = new Connection(['dsn' => TestCase::getDsn(), 'handleLuaEncodingErrors' => false]);
         $conn->open();
         try {
             $conn->createNosqlCommand()->evaluate("return box.space.myspace")->execute()->getResponseData();
@@ -956,7 +956,7 @@ class NosqlCommandTest extends TestCase
 
         // Handle errors
         $thrown = false;
-        $conn = new Connection(['dsn' => $this->getDsn(), 'handleLuaEncodingErrors' =>true]);
+        $conn = new Connection(['dsn' => TestCase::getDsn(), 'handleLuaEncodingErrors' =>true]);
         $conn->open();
         try {
             $conn->createNosqlCommand()->evaluate("return box.space.myspace")->execute()->getResponseData();
@@ -990,25 +990,25 @@ class NosqlCommandTest extends TestCase
         $this->getConnection()->createNosqlCommand()->insert('myspace', [5, "text 22", 12, 14, 126])->execute();
 
         // Delete by condition
-        $tuple = $this->getDb()->createNosqlCommand(new SelectRequest(123, 4, [111], 0, 1, IteratorTypes::EQ))->queryOne();
+        $tuple = self::getDb()->createNosqlCommand(new SelectRequest(123, 4, [111], 0, 1, IteratorTypes::EQ))->queryOne();
         $this->assertNotNull($tuple);
-        $tuple = $this->getDb()->createNosqlCommand(new SelectRequest(123, 4, [111], 0, 1, IteratorTypes::EQ))->queryGet();
+        $tuple = self::getDb()->createNosqlCommand(new SelectRequest(123, 4, [111], 0, 1, IteratorTypes::EQ))->queryGet();
         $this->assertNotNull($tuple);
-        $this->getDb()->createNosqlCommand()->delete('myspace', ['uniq' => 111])->execute();
-        $tuple = $this->getDb()->createNosqlCommand(new SelectRequest(123, 4, [111], 0, 1, IteratorTypes::EQ))->queryOne();
+        self::getDb()->createNosqlCommand()->delete('myspace', ['uniq' => 111])->execute();
+        $tuple = self::getDb()->createNosqlCommand(new SelectRequest(123, 4, [111], 0, 1, IteratorTypes::EQ))->queryOne();
         $this->assertNull($tuple);
-        $tuple = $this->getDb()->createNosqlCommand(new SelectRequest(123, 4, [111], 0, 1, IteratorTypes::EQ))->queryGet();
+        $tuple = self::getDb()->createNosqlCommand(new SelectRequest(123, 4, [111], 0, 1, IteratorTypes::EQ))->queryGet();
         $this->assertNull($tuple);
 
         // Update by condition
-        $tuple = $this->getDb()->createNosqlCommand(new SelectRequest(123, 4, [124], 0, 1, IteratorTypes::EQ))->queryOne();
+        $tuple = self::getDb()->createNosqlCommand(new SelectRequest(123, 4, [124], 0, 1, IteratorTypes::EQ))->queryOne();
         $this->assertEquals("text 22", $tuple[1]);
-        $tuple = $this->getDb()->createNosqlCommand(new SelectRequest(123, 4, [124], 0, 1, IteratorTypes::EQ))->queryGet();
+        $tuple = self::getDb()->createNosqlCommand(new SelectRequest(123, 4, [124], 0, 1, IteratorTypes::EQ))->queryGet();
         $this->assertEquals("text 22", $tuple[1]);
-        $r = $this->getDb()->createNosqlCommand()->update('myspace', ['uniq' => 124], Operations::set(1, "ww"))->execute()->getResponseData();
-        $tuple = $this->getDb()->createNosqlCommand(new SelectRequest(123, 4, [124], 0, 1, IteratorTypes::EQ))->queryOne();
+        $r = self::getDb()->createNosqlCommand()->update('myspace', ['uniq' => 124], Operations::set(1, "ww"))->execute()->getResponseData();
+        $tuple = self::getDb()->createNosqlCommand(new SelectRequest(123, 4, [124], 0, 1, IteratorTypes::EQ))->queryOne();
         $this->assertEquals("ww", $tuple[1]);
-        $tuple = $this->getDb()->createNosqlCommand(new SelectRequest(123, 4, [124], 0, 1, IteratorTypes::EQ))->queryGet();
+        $tuple = self::getDb()->createNosqlCommand(new SelectRequest(123, 4, [124], 0, 1, IteratorTypes::EQ))->queryGet();
         $this->assertEquals("ww", $tuple[1]);
     }
 }

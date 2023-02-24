@@ -28,6 +28,21 @@ class TestCase extends \PHPUnit\Framework\TestCase
     use FixtureTrait;
 
     /**
+     * @return \mhthnz\tarantool\Connection
+     * @throws \Exception
+     */
+    protected static function getDbStatic()
+    {
+        return self::getConnection();
+    }
+
+    public static function __callStatic($name, $arguments) {
+        if ($name === 'getDb') {
+            return call_user_func(array(TestCase::class, 'getDbStatic'), []);
+        }
+    }
+
+    /**
      * @return array|false|string
      */
     public static function getDsn()
@@ -390,8 +405,8 @@ class TestCase extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public function getParsedDsn(string $params)
+    public static function getParsedDsn(string $params)
     {
-        return preg_replace('/(?<!tcp:)\/\//', '/', $this->getDsn() . $params);
+        return preg_replace('/(?<!tcp:)\/\//', '/', self::getDsn() . $params);
     }
 }

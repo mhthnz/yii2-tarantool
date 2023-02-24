@@ -161,6 +161,7 @@ class DataReader extends \yii\base\BaseObject implements \Iterator, \Countable
      * In this case, use "SELECT COUNT(*) FROM tableName" to obtain the number of rows.
      * @return int number of rows contained in the result.
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         return $this->_result->count();
@@ -181,6 +182,7 @@ class DataReader extends \yii\base\BaseObject implements \Iterator, \Countable
      * This method is required by the interface [[\Iterator]].
      * @throws InvalidCallException if this method is invoked twice
      */
+    #[\ReturnTypeWillChange]
     public function rewind()
     {
         $this->_generator->rewind();
@@ -191,6 +193,7 @@ class DataReader extends \yii\base\BaseObject implements \Iterator, \Countable
      * This method is required by the interface [[\Iterator]].
      * @return int the index of the current row.
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->_generator->key();
@@ -201,6 +204,7 @@ class DataReader extends \yii\base\BaseObject implements \Iterator, \Countable
      * This method is required by the interface [[\Iterator]].
      * @return mixed the current row.
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return $this->_generator->current();
@@ -210,6 +214,7 @@ class DataReader extends \yii\base\BaseObject implements \Iterator, \Countable
      * Moves the internal pointer to the next row.
      * This method is required by the interface [[\Iterator]].
      */
+    #[\ReturnTypeWillChange]
     public function next()
     {
         $this->_generator->next();
@@ -220,6 +225,7 @@ class DataReader extends \yii\base\BaseObject implements \Iterator, \Countable
      * This method is required by the interface [[\Iterator]].
      * @return bool whether there is a row of data at current position.
      */
+    #[\ReturnTypeWillChange]
     public function valid()
     {
         return $this->_generator->valid();

@@ -78,7 +78,7 @@ class DbManagerTest extends ManagerTestCase
         $this->migrateControllerClass = EchoMigrateController::class;
         $this->migrationBaseClass = '\\'.Migration::class;
         $this->mockApplication(['components' => [
-            'tarantool' => $this->getDb(),
+            'tarantool' => self::getDb(),
             'authManager' => $this->createManager(),
             'request' => [
                 'class' => Request::class,
@@ -177,7 +177,7 @@ class DbManagerTest extends ManagerTestCase
         $this->auth->assign($updatePost, $userId);
     }
 
-    public function emptyValuesProvider()
+    public static function emptyValuesProvider()
     {
         return [
             [0, 0, true],

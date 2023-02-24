@@ -22,8 +22,8 @@ class LuaValidatorTest extends TestCase
             ]
         ]]);
         $this->dropConstraints();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
         $this->dropTables();
         $this->makeSpaceForCmd();
     }
@@ -44,7 +44,7 @@ class LuaValidatorTest extends TestCase
             return value == params['val'];
         end
 LUA;
-        foreach ([$this->getDb(), 'tarantool'] as $val) {
+        foreach ([self::getDb(), 'tarantool'] as $val) {
             $validator = new LuaValidator(['db' => $val, 'function' => $func, 'params' => ['val' => 2]]);
             $this->assertFalse($validator->validate(1));
             $this->assertTrue($validator->validate(2));
@@ -195,7 +195,7 @@ LUA;
             end
 LUA;
         $model->setLuaFunc($lua);
-        $model->setDB($this->getDb());
+        $model->setDB(self::getDb());
         $this->assertFalse($model->validate());
         $err = $model->getErrors();
         $this->assertTrue(array_key_exists('field2', $err));

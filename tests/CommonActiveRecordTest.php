@@ -28,10 +28,10 @@ class CommonActiveRecordTest extends TestCase
     {
         parent::setUp();
         $this->mockApplication();
-        ActiveRecord::$db = $this->getDb();
+        ActiveRecord::$db = self::getDb();
         $this->dropConstraints();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
         $this->dropTables();
         $this->createStructure();
     }
@@ -42,8 +42,8 @@ class CommonActiveRecordTest extends TestCase
     protected function tearDown(): void
     {
         $this->dropConstraints();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
         $this->dropTables();
         parent::tearDown();
     }

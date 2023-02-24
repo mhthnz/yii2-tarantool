@@ -32,8 +32,8 @@ class ConnectionTest extends TestCase
             ]
         ]]);
         $this->dropConstraints();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
         $this->dropTables();
         $this->createStructure();
     }
@@ -44,7 +44,7 @@ class ConnectionTest extends TestCase
     protected function tearDown(): void
     {
         $this->dropConstraints();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
         $this->dropTables();
         parent::tearDown();
     }
@@ -73,8 +73,8 @@ class ConnectionTest extends TestCase
 
         /** @var Connection $t */
         $t = \Yii::$app->tarantool;
-        $t->version = $this->getDb()->version; // Copy actual tarantool version to avoid errors. Dont do shadow connection opening
-        $this->getDb()->close();
+        $t->version = self::getDb()->version; // Copy actual tarantool version to avoid errors. Dont do shadow connection opening
+        self::getDb()->close();
         $this->assertFalse($t->isActive);
         $thrown = false;
         try {
@@ -86,7 +86,7 @@ class ConnectionTest extends TestCase
         $this->assertTrue($t->isActive);
     }
 
-    public function methodProvider()
+    public static function methodProvider()
     {
         return [
             ['getTablePrimaryKey', ['customer']],
@@ -111,7 +111,7 @@ class ConnectionTest extends TestCase
 
     public function testClient()
     {
-        $client = $this->getDb()->getSlaveClient();
+        $client = self::getDb()->getSlaveClient();
         $this->assertInstanceOf(Client::class, $client);
     }
 }

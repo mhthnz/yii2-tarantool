@@ -30,8 +30,8 @@ class ClientTest extends TestCase
             ]
         ]]);
         $this->dropConstraints();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
         $this->dropTables();
         $this->makeSpaceForCmd();
     }
@@ -180,17 +180,17 @@ class ClientTest extends TestCase
     /**
      * @return \Closure[][]
      */
-    public function clientProvider()
+    public static function clientProvider()
     {
         return[
             [
                 function() {
-                    return Client::fromDsn($this->getParsedDsn('/?persistent=false'));
+                    return Client::fromDsn(TestCase::getParsedDsn('/?persistent=false'));
                 }
             ],
             [
                 function() {
-                    return Client::fromDsn($this->getParsedDsn('/?persistent=false'), new PurePacker(
+                    return Client::fromDsn(TestCase::getParsedDsn('/?persistent=false'), new PurePacker(
                         new Packer(PackOptions::FORCE_STR, []),
                         new BufferUnpacker('', UnpackOptions::BIGINT_AS_DEC, [])
                     ));
@@ -198,10 +198,10 @@ class ClientTest extends TestCase
             ],
             [
                 function() {
-                    return Client::fromDsn($this->getParsedDsn('/?persistent=false'), new PurePacker(
+                    return Client::fromDsn(TestCase::getParsedDsn('/?persistent=false'), new PurePacker(
                         new Packer(PackOptions::FORCE_STR, [new BinTransformer()]),
                         new BufferUnpacker('', UnpackOptions::BIGINT_AS_DEC, [new ErrorExtension()])
-                    ))->withMiddleware(new LastInsertIDMiddleware($this->getDb()));
+                    ))->withMiddleware(new LastInsertIDMiddleware(TestCase::getDb()));
                 }
             ],
             [
@@ -211,12 +211,12 @@ class ClientTest extends TestCase
             ],
             [
                 function() {
-                    return Client::fromDefaults()->withMiddleware(new LastInsertIDMiddleware($this->getDb()));
+                    return Client::fromDefaults()->withMiddleware(new LastInsertIDMiddleware(TestCase::getDb()));
                 }
             ],
             [
                 function() {
-                    $url = parse_url($this->getDsn());
+                    $url = parse_url(TestCase::getDsn());
                     $dsn = $url['scheme'] . '://' . $url['host'] . ':' . $url['port'];
                     return Client::fromOptions([
                         'uri' => $dsn,
@@ -226,11 +226,11 @@ class ClientTest extends TestCase
             ],
             [
                 function() {
-                    $url = parse_url($this->getDsn());
+                    $url = parse_url(TestCase::getDsn());
                     $dsn = $url['scheme'] . '://' . $url['host'] . ':' . $url['port'];
                     return Client::fromOptions([
                         'uri' => $dsn,
-                    ])->withMiddleware(new LastInsertIDMiddleware($this->getDb()));
+                    ])->withMiddleware(new LastInsertIDMiddleware(TestCase::getDb()));
                 }
             ],
         ];

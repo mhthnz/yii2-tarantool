@@ -25,8 +25,8 @@ class SchemaTest extends TestCase
         parent::setUp();
         $this->mockApplication();
         $this->dropConstraints();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
         $this->dropTables();
         $this->createStructure();
         $this->getConnection()->createCommand()->createView('animal_view', 'SELECT * FROM "animal"')->execute();
@@ -38,7 +38,7 @@ class SchemaTest extends TestCase
     protected function tearDown(): void
     {
         $this->dropConstraints();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
         $this->dropTables();
         parent::tearDown();
     }
@@ -119,7 +119,7 @@ class SchemaTest extends TestCase
         $this->assertNotSame($noCacheTable, $refreshedTable);
     }
 
-    public function tableSchemaCachePrefixesProvider()
+    public static function tableSchemaCachePrefixesProvider()
     {
         $configs = [
             [
@@ -497,7 +497,7 @@ class SchemaTest extends TestCase
         }
     }
 
-    public function constraintsProvider()
+    public static function constraintsProvider()
     {
         return [
             '1: primary key' => ['T_constraints_1', 'primaryKey', new Constraint([
@@ -606,14 +606,14 @@ class SchemaTest extends TestCase
         ];
     }
 
-    public function lowercaseConstraintsProvider()
+    public static function lowercaseConstraintsProvider()
     {
-        return $this->constraintsProvider();
+        return self::constraintsProvider();
     }
 
-    public function uppercaseConstraintsProvider()
+    public static function uppercaseConstraintsProvider()
     {
-        return $this->constraintsProvider();
+        return self::constraintsProvider();
     }
 
     /**

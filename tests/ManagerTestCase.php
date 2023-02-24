@@ -458,7 +458,7 @@ abstract class ManagerTestCase extends \mhthnz\tarantool\tests\TestCase
         $this->assertNotEmpty($this->auth->getRoles());
     }
 
-    public function RBACItemsProvider()
+    public static function RBACItemsProvider()
     {
         return [
             [Item::TYPE_ROLE],

@@ -461,7 +461,7 @@ class Schema extends \yii\db\Schema implements ConstraintFinderInterface
     protected function processValue(array $info)
     {
         $val = $info['default'] ?? null;
-        if (($info['type'] === Schema::TYPE_STRING || $info['type'] === Schema::TYPE_TEXT || $info['type'] === Schema::TYPE_CHAR) && ($strlen = strlen(/** @scrutinizer ignore-type */ $val)) >= 2) {
+        if (($info['type'] === Schema::TYPE_STRING || $info['type'] === Schema::TYPE_TEXT || $info['type'] === Schema::TYPE_CHAR) && ($strlen = strlen(/** @scrutinizer ignore-type */ (string) $val)) >= 2) {
             if ($val[0] === "'" && $val[$strlen - 1] === "'") {
                 $val = substr($val, 1, $strlen - 2);
             }

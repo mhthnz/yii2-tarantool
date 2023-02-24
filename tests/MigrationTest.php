@@ -39,15 +39,15 @@ class MigrationTest extends TestCase
         $this->mockApplication(['components' => [
             'tarantool' => [
                 'class' => \mhthnz\tarantool\Connection::class,
-                'dsn' => $this->getDsn(),
+                'dsn' => TestCase::getDsn(),
             ]
         ]]);
         $this->migrateControllerClass = EchoMigrateController::class;
         $this->migrationBaseClass = '\\'.Migration::class;
         if ($this->_first) {
             $this->dropConstraints();
-            $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
-            $this->getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
+            self::getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+            self::getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
             $this->dropTables();
 
             $this->_first = false;
@@ -71,7 +71,7 @@ class MigrationTest extends TestCase
     protected function getMigrationHistory()
     {
         $query = new Query();
-        return $query->from('migration')->all($this->getDb());
+        return $query->from('migration')->all(self::getDb());
     }
 
     /**
@@ -80,7 +80,7 @@ class MigrationTest extends TestCase
      */
     protected function checkDbSyntax($key, $definition, $value = null)
     {
-        $this->getDb()->createCommand('drop table if exists "tbl"')->execute();
+        self::getDb()->createCommand('drop table if exists "tbl"')->execute();
         $isPk = false;
         if (stripos($key, 'pk') !== false) {
             $isPk = true;
@@ -94,9 +94,9 @@ class MigrationTest extends TestCase
         $isThrown = false;
         $message = null;
         try {
-            $this->getDb()->createCommand()->createTable('tbl', $columns)->execute();
-            $this->getDb()->createCommand()->insert('tbl', ['column' => $value])->execute();
-            $val = (new Query)->select("column")->from('tbl')->scalar($this->getDb());
+            self::getDb()->createCommand()->createTable('tbl', $columns)->execute();
+            self::getDb()->createCommand()->insert('tbl', ['column' => $value])->execute();
+            $val = (new Query)->select("column")->from('tbl')->scalar(self::getDb());
             $this->assertEquals($value, $val);
         } catch (\Throwable $e) {
             $isThrown = true;
@@ -132,9 +132,9 @@ class MigrationTest extends TestCase
         $this->runMigrateControllerAction('history', [], $controllerConfig);
 
         $controller = $this->createMigrateController($controllerConfig);
-        $controller->db = $this->getDb();
+        $controller->db = self::getDb();
 
-        $this->getDb()->createCommand()
+        self::getDb()->createCommand()
             ->batchInsert(
                 'migration',
                 ['version', 'apply_time'],
@@ -284,7 +284,7 @@ class MigrationTest extends TestCase
         $integers['integerUnsignedCheckUniqueDefault'] = [(new Migration())->integer()->unsigned()->defaultValue(123)->unique()->check('"column" != 111'), 'unsigned UNIQUE DEFAULT 123 CHECK ("column" != 111)'];
 
         foreach ($integers as $key => $b) {
-            $qb = new QueryBuilder($this->getDb(), []);
+            $qb = new QueryBuilder(self::getDb(), []);
             $act = $qb->getColumnType((string) $b[0]);
             $this->assertEquals($b[1], trim($act), "$key is invalid, {$b[1]} is not equal " . $b[0]);
             $this->checkDbSyntax($key, $act, 1);
@@ -335,7 +335,7 @@ class MigrationTest extends TestCase
         $doubles['doubleCheckUniqueDefault'] = [(new Migration())->double()->defaultValue(1.1)->unique()->check('"column" > 1.0'), 'double UNIQUE DEFAULT 1.1 CHECK ("column" > 1.0)'];
 
         foreach ($doubles as $key => $b) {
-            $qb = new QueryBuilder($this->getDb(), []);
+            $qb = new QueryBuilder(self::getDb(), []);
             $act = $qb->getColumnType((string) $b[0]);
             $this->assertEquals($b[1], $act, "$key is invalid, {$b[1]} is not equal " . $b[0]);
             $this->checkDbSyntax($key, $act, 1.1);
@@ -375,8 +375,8 @@ CODE
         $this->assertSame(ExitCode::OK, $this->getExitCode());
         $this->assertSame(ExitCode::OK, $this->getExitCode());
 
-        $memtxSchema = $this->getDb()->schema->getTableSchema('memtx_table');
-        $vinylSchema = $this->getDb()->schema->getTableSchema('vinyl_table');
+        $memtxSchema = self::getDb()->schema->getTableSchema('memtx_table');
+        $vinylSchema = self::getDb()->schema->getTableSchema('vinyl_table');
         $this->assertNotNull($memtxSchema);
         $this->assertNotNull($vinylSchema);
         $this->assertEquals(TableSchema::ENGINE_MEMTX, $memtxSchema->engine);
@@ -384,8 +384,8 @@ CODE
 
         $this->runMigrateControllerAction('down', [2]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $memtxSchema = $this->getDb()->schema->getTableSchema('memtx_table', true);
-        $vinylSchema = $this->getDb()->schema->getTableSchema('vinyl_table', true);
+        $memtxSchema = self::getDb()->schema->getTableSchema('memtx_table', true);
+        $vinylSchema = self::getDb()->schema->getTableSchema('vinyl_table', true);
         $this->assertNull($memtxSchema);
         $this->assertNull($vinylSchema);
     }
@@ -463,38 +463,38 @@ CODE
 
         $this->runMigrateControllerAction('up', [2]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $this->assertNotNull($this->getDb()->schema->getTableSchema('table', true));
-        $this->assertNotNull($this->getDb()->schema->getTableSchema('table1', true));
-        $this->assertNotNull($this->getDb()->schema->getTableSchema('table2', true));
-        $this->assertEquals(3, $this->getDb()->createCommand('SELECT count(*) FROM "table"')->queryScalar());
-        $this->assertEquals(0, $this->getDb()->createCommand('SELECT count(*) FROM "table1"')->queryScalar());
+        $this->assertNotNull(self::getDb()->schema->getTableSchema('table', true));
+        $this->assertNotNull(self::getDb()->schema->getTableSchema('table1', true));
+        $this->assertNotNull(self::getDb()->schema->getTableSchema('table2', true));
+        $this->assertEquals(3, self::getDb()->createCommand('SELECT count(*) FROM "table"')->queryScalar());
+        $this->assertEquals(0, self::getDb()->createCommand('SELECT count(*) FROM "table1"')->queryScalar());
         $this->runMigrateControllerAction('down', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $this->assertEquals(0, $this->getDb()->createCommand('SELECT count(*) FROM "table"')->queryScalar());
-        $this->assertEquals(0, $this->getDb()->createCommand('SELECT count(*) FROM "table1"')->queryScalar());
+        $this->assertEquals(0, self::getDb()->createCommand('SELECT count(*) FROM "table"')->queryScalar());
+        $this->assertEquals(0, self::getDb()->createCommand('SELECT count(*) FROM "table1"')->queryScalar());
         $this->runMigrateControllerAction('up', [2]);
-        $this->assertEquals(3, $this->getDb()->createCommand('SELECT count(*) FROM "table"')->queryScalar());
-        $this->assertEquals(2, $this->getDb()->createCommand('SELECT count(*) FROM "table1"')->queryScalar());
+        $this->assertEquals(3, self::getDb()->createCommand('SELECT count(*) FROM "table"')->queryScalar());
+        $this->assertEquals(2, self::getDb()->createCommand('SELECT count(*) FROM "table1"')->queryScalar());
 
         // Update
-        $this->assertEquals(1, $this->getDb()->createCommand('SELECT count(*) FROM "table1" as "t" where "t"."time" = :time', [':time' => 123123])->queryScalar());
+        $this->assertEquals(1, self::getDb()->createCommand('SELECT count(*) FROM "table1" as "t" where "t"."time" = :time', [':time' => 123123])->queryScalar());
         $this->runMigrateControllerAction('up', [1]);
-        $this->assertEquals(0, $this->getDb()->createCommand( 'SELECT count(*) FROM "table1" as "t" where "t"."time" = :time', [':time' => 123123])->queryScalar());
-        $this->assertEquals(1, $this->getDb()->createCommand( 'SELECT count(*) FROM "table1" as "t" where "t"."time" = :time', [':time' => 123123123])->queryScalar());
+        $this->assertEquals(0, self::getDb()->createCommand( 'SELECT count(*) FROM "table1" as "t" where "t"."time" = :time', [':time' => 123123])->queryScalar());
+        $this->assertEquals(1, self::getDb()->createCommand( 'SELECT count(*) FROM "table1" as "t" where "t"."time" = :time', [':time' => 123123123])->queryScalar());
         $this->runMigrateControllerAction('down', [1]);
-        $this->assertEquals(1, $this->getDb()->createCommand( 'SELECT count(*) FROM "table1" as "t" where "t"."time" = :time', [':time' => 123123])->queryScalar());
-        $this->assertEquals(0, $this->getDb()->createCommand( 'SELECT count(*) FROM "table1" as "t" where "t"."time" = :time', [':time' => 123123123])->queryScalar());
+        $this->assertEquals(1, self::getDb()->createCommand( 'SELECT count(*) FROM "table1" as "t" where "t"."time" = :time', [':time' => 123123])->queryScalar());
+        $this->assertEquals(0, self::getDb()->createCommand( 'SELECT count(*) FROM "table1" as "t" where "t"."time" = :time', [':time' => 123123123])->queryScalar());
 
         // Batch insert
-        $this->assertEquals(0, $this->getDb()->createCommand('SELECT count(*) FROM "table2" ')->queryScalar());
+        $this->assertEquals(0, self::getDb()->createCommand('SELECT count(*) FROM "table2" ')->queryScalar());
         $this->runMigrateControllerAction('up', [2]);
-        $this->assertEquals(4, $this->getDb()->createCommand('SELECT count(*) FROM "table2" ')->queryScalar());
+        $this->assertEquals(4, self::getDb()->createCommand('SELECT count(*) FROM "table2" ')->queryScalar());
         $this->runMigrateControllerAction('down', [1]);
-        $this->assertEquals(0, $this->getDb()->createCommand('SELECT count(*) FROM "table2" ')->queryScalar());
+        $this->assertEquals(0, self::getDb()->createCommand('SELECT count(*) FROM "table2" ')->queryScalar());
         $this->runMigrateControllerAction('down', [4]);
-        $this->assertNull($this->getDb()->schema->getTableSchema('table', true));
-        $this->assertNull($this->getDb()->schema->getTableSchema('table1', true));
-        $this->assertNull($this->getDb()->schema->getTableSchema('table2', true));
+        $this->assertNull(self::getDb()->schema->getTableSchema('table', true));
+        $this->assertNull(self::getDb()->schema->getTableSchema('table1', true));
+        $this->assertNull(self::getDb()->schema->getTableSchema('table2', true));
     }
 
     public function testRenameDropTable()
@@ -523,22 +523,22 @@ CODE
 
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $this->assertNotNull($this->getDb()->schema->getTableSchema('table', true));
-        $this->assertNull($this->getDb()->schema->getTableSchema('newtable', true));
+        $this->assertNotNull(self::getDb()->schema->getTableSchema('table', true));
+        $this->assertNull(self::getDb()->schema->getTableSchema('newtable', true));
         $this->runMigrateControllerAction('up', [1]);
-        $this->assertNotNull($this->getDb()->schema->getTableSchema( 'newtable', true));
-        $this->assertNull($this->getDb()->schema->getTableSchema( 'table',true));
+        $this->assertNotNull(self::getDb()->schema->getTableSchema( 'newtable', true));
+        $this->assertNull(self::getDb()->schema->getTableSchema( 'table',true));
         $this->runMigrateControllerAction('down', [1]);
-        $this->assertNotNull($this->getDb()->schema->getTableSchema('table', true));
-        $this->assertNull($this->getDb()->schema->getTableSchema('newtable', true));
+        $this->assertNotNull(self::getDb()->schema->getTableSchema('table', true));
+        $this->assertNull(self::getDb()->schema->getTableSchema('newtable', true));
         $this->runMigrateControllerAction('down', [1]);
-        $this->assertNull($this->getDb()->schema->getTableSchema('table', true));
-        $this->assertNull($this->getDb()->schema->getTableSchema('newtable', true));
+        $this->assertNull(self::getDb()->schema->getTableSchema('table', true));
+        $this->assertNull(self::getDb()->schema->getTableSchema('newtable', true));
     }
 
     public function testAddColumn()
     {
-        if (version_compare($this->getDb()->version,  '2.7', "<")) {
+        if (version_compare(self::getDb()->version,  '2.7', "<")) {
             $this->markTestSkipped("Tarantool version less than 2.7 doesn't support adding column");
         }
 
@@ -588,12 +588,12 @@ CODE
 
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $schema = $this->getDb()->schema->getTableSchema('table', true);
+        $schema = self::getDb()->schema->getTableSchema('table', true);
         $check(3, $schema);
 
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $schema = $this->getDb()->schema->getTableSchema('table', true);
+        $schema = self::getDb()->schema->getTableSchema('table', true);
         $check(4, $schema);
         $this->assertEquals('newcolumn', $schema->columns['newcolumn']->name);
         $this->assertEquals('binary', $schema->columns['newcolumn']->type);
@@ -621,9 +621,9 @@ CODE
 
         $o = $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $pk = $this->getDb()->schema->getTablePrimaryKey('table0', true);
+        $pk = self::getDb()->schema->getTablePrimaryKey('table0', true);
         $this->assertEquals(['id'], $pk->columnNames);
-        $pkName = $this->getDb()->schema->getTablePrimaryKey('table0', true)->name;
+        $pkName = self::getDb()->schema->getTablePrimaryKey('table0', true)->name;
 
         $this->createMigrationWithContent("DropPrimaryKey",
             <<<CODE
@@ -637,12 +637,12 @@ CODE
 
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $pk = $this->getDb()->schema->getTablePrimaryKey('table0', true);
+        $pk = self::getDb()->schema->getTablePrimaryKey('table0', true);
         $this->assertEquals(null, $pk);
 
         $this->runMigrateControllerAction('down', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $pk = $this->getDb()->schema->getTablePrimaryKey('table0', true);
+        $pk = self::getDb()->schema->getTablePrimaryKey('table0', true);
         $this->assertEquals(['id'], $pk->columnNames);
     }
 
@@ -686,25 +686,25 @@ CODE
 
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $this->assertNotNull($this->getDb()->schema->getTableSchema('customer', true));
-        $this->assertNotNull($this->getDb()->schema->getTableSchema('order', true));
-        $fk = $this->getDb()->schema->getTableSchema('order', true)->foreignKeys;
+        $this->assertNotNull(self::getDb()->schema->getTableSchema('customer', true));
+        $this->assertNotNull(self::getDb()->schema->getTableSchema('order', true));
+        $fk = self::getDb()->schema->getTableSchema('order', true)->foreignKeys;
         $this->assertEquals([], $fk);
 
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $fk = $this->getDb()->schema->getTableSchema('order', true)->foreignKeys;
+        $fk = self::getDb()->schema->getTableSchema('order', true)->foreignKeys;
         $this->assertEquals(['FK_order_customer_id' => ['customer', 'customer_id' => 'id']], $fk);
 
         $this->runMigrateControllerAction('down', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $fk = $this->getDb()->schema->getTableSchema('order', true)->foreignKeys;
+        $fk = self::getDb()->schema->getTableSchema('order', true)->foreignKeys;
         $this->assertEquals([], $fk);
 
         $this->runMigrateControllerAction('down', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $this->assertNull($this->getDb()->schema->getTableSchema('customer', true));
-        $this->assertNull($this->getDb()->schema->getTableSchema('order', true));
+        $this->assertNull(self::getDb()->schema->getTableSchema('customer', true));
+        $this->assertNull(self::getDb()->schema->getTableSchema('order', true));
     }
 
     public function testAddDropIndex()
@@ -762,15 +762,15 @@ CODE
 
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $this->assertNotNull($this->getDb()->schema->getTableSchema('order', true));
-        $indexes = $this->getDb()->schema->getTableIndexes('order', true);
+        $this->assertNotNull(self::getDb()->schema->getTableSchema('order', true));
+        $indexes = self::getDb()->schema->getTableIndexes('order', true);
         $this->assertEquals(1, count($indexes));
         $this->assertEquals(true, $indexes[0]->isPrimary);
         $this->assertEquals(['id'], $indexes[0]->columnNames);
 
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $indexes = $this->getDb()->schema->getTableIndexes('order', true);
+        $indexes = self::getDb()->schema->getTableIndexes('order', true);
         $this->assertEquals(2, count($indexes));
         $this->assertEquals(['customer_id'], $indexes[1]->columnNames);
         $this->assertEquals('order-unique', $indexes[1]->name);
@@ -792,7 +792,7 @@ CODE
         // Drop index
         $this->runMigrateControllerAction('down', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $indexes = $this->getDb()->schema->getTableIndexes('order', true);
+        $indexes = self::getDb()->schema->getTableIndexes('order', true);
         $this->assertEquals(1, count($indexes));
         $this->assertEquals(true, $indexes[0]->isPrimary);
         $this->assertEquals(['id'], $indexes[0]->columnNames);
@@ -800,7 +800,7 @@ CODE
         $this->runMigrateControllerAction('mark', [$date]);
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $indexes = $this->getDb()->schema->getTableIndexes('order', true);
+        $indexes = self::getDb()->schema->getTableIndexes('order', true);
         $this->assertEquals(3, count($indexes));
         $this->assertEquals(false, $indexes[2]->isPrimary);
         $this->assertEquals(['created_at'], $indexes[2]->columnNames);
@@ -931,18 +931,18 @@ CODE
         // Spaces
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace")->queryAll();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace")->queryAll();
         $this->assertNotEquals([null], $resp);
         $this->assertEquals('memtx', $resp['engine']);
 
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->queryAll();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->queryAll();
         $this->assertNotEquals([null], $resp);
         $this->assertEquals('vinyl', $resp['engine']);
 
         // Indexes
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace.index")->queryAll();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace.index")->queryAll();
         $this->assertArrayHasKey('pk', $resp);
         $this->assertArrayHasKey('stringindex', $resp);
         $this->assertArrayHasKey('uniq', $resp);
@@ -959,7 +959,7 @@ CODE
         $this->assertEquals('TREE', strtoupper($resp['stringindex']['type']));
         $this->assertEquals([['type' => 'integer', 'is_nullable' => false, 'fieldno' => 5]], $resp['uniq']['parts']);
 
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace1.index")->queryAll();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace1.index")->queryAll();
         $this->assertArrayHasKey('pk', $resp);
         $this->assertArrayHasKey('intcompositeindex', $resp);
         $this->assertEquals(true, $resp['pk']['unique']);
@@ -974,83 +974,83 @@ CODE
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
 
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace1')->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace1')->column(1);
         $this->assertEquals(['text', 'text 1', 'text 2'], $resp);
 
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
         $this->assertEquals(['text', 'text 1', 'text 2'], $resp);
 
         // Replace upsert update
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
 
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace1')->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace1')->column(1);
         $this->assertEquals(['text', 'upsert text', 'text 2', 'text 4'], $resp);
 
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
         $this->assertEquals(['new text', 'text 1', 'text 5', 'text replaced'], $resp);
 
         // Call eval
         $this->runMigrateControllerAction('up', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
 
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace1')->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace1')->column(1);
         $this->assertEquals(['text', 'upsert text', 'text 2', 'text 4', 'text 6'], $resp);
 
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
         $this->assertEquals(['new text', 'text 1', 'text 5', 'text 6', 'text replaced'], $resp);
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->column(1);
         $this->assertEquals(['new text', 'text 1', 'text 5', 'text 6', 'text replaced'], $resp);
 
         // Call eval down
         $this->runMigrateControllerAction('down', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
 
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace1')->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace1')->column(1);
         $this->assertEquals(['text', 'upsert text', 'text 2', 'text 4'], $resp);
 
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
         $this->assertEquals(['new text', 'text 1', 'text 5', 'text replaced'], $resp);
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->column(1);
         $this->assertEquals(['new text', 'text 1', 'text 5', 'text replaced'], $resp);
 
         // Update replace upsert down
         $this->runMigrateControllerAction('down', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
 
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace1')->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace1')->column(1);
         $this->assertEquals(['text', 'text 1', 'text 2'], $resp);
 
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1);
         $this->assertEquals(['text', 'text 1', 'text 2'], $resp);
-        $resp = $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->column(1);
+        $resp = self::getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->column(1);
         $this->assertEquals(['text', 'text 1', 'text 2'], $resp);
 
         // Insert delete truncate down
         $this->runMigrateControllerAction('down', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
-        $this->assertEquals(0, $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->count());
-        $this->assertEquals(0, $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->count());
-        $this->assertEquals(1, $this->getDb()->createNosqlQuery()->from('myspace1')->count());
+        $this->assertEquals(0, self::getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->count());
+        $this->assertEquals(0, self::getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->count());
+        $this->assertEquals(1, self::getDb()->createNosqlQuery()->from('myspace1')->count());
 
         // Create drop index down
         $this->runMigrateControllerAction('down', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
 
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace.index")->queryAll();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace.index")->queryAll();
         $this->assertEmpty($resp);
 
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace1.index")->queryAll();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace1.index")->queryAll();
         $this->assertEmpty($resp);
 
         // Drop space
         $this->runMigrateControllerAction('down', [1]);
         $this->assertSame(ExitCode::OK, $this->getExitCode());
 
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace")->queryAll();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace")->queryAll();
         $this->assertEquals([null], $resp);
 
-        $resp = $this->getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->queryAll();
+        $resp = self::getDb()->createNosqlCommand()->evaluate("return box.space.myspace1")->queryAll();
         $this->assertEquals([null], $resp);
     }
 
@@ -1069,39 +1069,39 @@ CODE
         $this->assertTrue((bool) preg_match('/m140506_102106_rbac_init/', $res));
 
         $this->runMigrateControllerAction('up', [1], $config);
-        $t = $this->getDb()->schema->getTableNames();
+        $t = self::getDb()->schema->getTableNames();
         $this->assertContains('auth_rule', $t);
         $this->assertContains('auth_item', $t);
         $this->assertContains('auth_item_child', $t);
         $this->assertContains('auth_assignment', $t);
 
-        $fks = $this->getDb()->schema->getTableForeignKeys('auth_rule');
+        $fks = self::getDb()->schema->getTableForeignKeys('auth_rule');
         $this->assertCount(0, $fks);
 
-        $fks = $this->getDb()->schema->getTableForeignKeys('auth_item');
+        $fks = self::getDb()->schema->getTableForeignKeys('auth_item');
         $this->assertCount(1, $fks);
 
-        $fks = $this->getDb()->schema->getTableForeignKeys('auth_item_child');
+        $fks = self::getDb()->schema->getTableForeignKeys('auth_item_child');
         $this->assertCount(2, $fks);
 
-        $fks = $this->getDb()->schema->getTableForeignKeys('auth_assignment');
+        $fks = self::getDb()->schema->getTableForeignKeys('auth_assignment');
         $this->assertCount(1, $fks);
 
-        $idx = $this->getDb()->schema->getTableIndexes('auth_assignment');
+        $idx = self::getDb()->schema->getTableIndexes('auth_assignment');
         $this->assertCount(3, $idx);
 
-        $idx = $this->getDb()->schema->getTableIndexes('auth_item');
+        $idx = self::getDb()->schema->getTableIndexes('auth_item');
         $this->assertCount(3, $idx);
 
-        $idx = $this->getDb()->schema->getTableIndexes('auth_rule');
+        $idx = self::getDb()->schema->getTableIndexes('auth_rule');
         $this->assertCount(2, $idx);
 
-        $idx = $this->getDb()->schema->getTableIndexes('auth_item_child');
+        $idx = self::getDb()->schema->getTableIndexes('auth_item_child');
         $this->assertCount(2, $idx);
 
         $this->runMigrateControllerAction('down', [1], $config);
 
-        $t = $this->getDb()->schema->getTableNames('', true);
+        $t = self::getDb()->schema->getTableNames('', true);
         $this->assertNotContains('auth_rule', $t);
         $this->assertNotContains('auth_item', $t);
         $this->assertNotContains('auth_item_child', $t);

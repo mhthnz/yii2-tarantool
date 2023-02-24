@@ -88,3 +88,30 @@ Future plans
 * Queue
 * Cache
 * Sessions
+
+Running tests
+------------
+
+* First of all you need to run tarantool and bind it to localhost:3301
+
+```bash
+$ docker run --name mytarantool -p3301:3301 -d tarantool/tarantool:2.4.1
+```
+* Install php deps
+```bash
+$ sudo apt install php-mbstring php-dom
+
+$ sudo apt install php7.3-mbstring php7.3-dom # or specify php version 
+```
+
+* Install vendor
+```bash
+$ php composer install
+
+$ php7.3 composer.phar install # or specify php version 
+```
+
+* Run phpunit tests
+```bash
+$ php ./vendor/phpunit/phpunit/phpunit --bootstrap ./tests/_bootstrap.php --configuration ./phpunit.xml.dist 
+```

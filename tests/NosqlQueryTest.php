@@ -21,8 +21,8 @@ class NosqlQueryTest extends TestCase
             ]
         ]]);
         $this->dropConstraints();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
-        $this->getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "animal_view"')->execute();
+        self::getDb()->createCommand('DROP VIEW IF EXISTS "testCreateView"')->execute();
         $this->dropTables();
 
     }
@@ -41,7 +41,7 @@ class NosqlQueryTest extends TestCase
         $this->makeSpaceForCmd();
 
         // Existent space
-        $q = new Query(['db' => $this->getDb()]);
+        $q = new Query(['db' => self::getDb()]);
         $q->from('myspace');
         $this->assertEquals(123, $q->buildFrom());
 
@@ -60,7 +60,7 @@ class NosqlQueryTest extends TestCase
     {
         $this->makeSpaceForCmd();
 
-        $q = new Query(['db' => $this->getDb()]);
+        $q = new Query(['db' => self::getDb()]);
         $q->from('myspace');
 
         // By primary key
@@ -76,7 +76,7 @@ class NosqlQueryTest extends TestCase
         $this->assertEquals(IteratorTypes::REQ, $q->buildIterator());
 
         // Primary composite index
-        $q = new Query(['db' => $this->getDb()]);
+        $q = new Query(['db' => self::getDb()]);
         $q->from('myspace');
         $q->where(['firstcol', 'secondcol']);
         $this->assertEquals(0, $q->buildIndex());
@@ -112,7 +112,7 @@ class NosqlQueryTest extends TestCase
 
         // Different conditions with other indexes
        foreach (Query::$ITERATOR_MAP as $cond => $iterator) {
-           $q = new Query(['db' => $this->getDb()]);
+           $q = new Query(['db' => self::getDb()]);
            $q->from('myspace');
            $q->where([$cond, 123]);
            $this->assertEquals(0, $q->buildIndex());
@@ -192,7 +192,7 @@ class NosqlQueryTest extends TestCase
        }
 
        // non-existent index
-        $q = new Query(['db' => $this->getDb()]);
+        $q = new Query(['db' => self::getDb()]);
         $q->from('myspace');
         $q->where(['=', 'non-existent-index', 11]);
         $thrown = false;
@@ -204,21 +204,21 @@ class NosqlQueryTest extends TestCase
         $this->assertTrue($thrown);
 
         // Empty value
-        $q = new Query(['db' => $this->getDb()]);
+        $q = new Query(['db' => self::getDb()]);
         $q->from('myspace');
         $q->where([]);
         $this->assertEquals(0, $q->buildIndex());
         $this->assertEquals([], $q->buildKey());
         $this->assertEquals(IteratorTypes::EQ, $q->buildIterator());
 
-        $q = new Query(['db' => $this->getDb()]);
+        $q = new Query(['db' => self::getDb()]);
         $q->from('myspace');
         $q->where(['=', []]);
         $this->assertEquals(0, $q->buildIndex());
         $this->assertEquals([], $q->buildKey());
         $this->assertEquals(IteratorTypes::EQ, $q->buildIterator());
 
-        $q = new Query(['db' => $this->getDb()]);
+        $q = new Query(['db' => self::getDb()]);
         $q->from('myspace');
         $q->where(['=', 'stringindex', []]);
         $this->assertEquals(1, $q->buildIndex());
@@ -231,10 +231,10 @@ class NosqlQueryTest extends TestCase
         $rows = $this->makeSpaceForCmd();
 
         // Order second index
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $this->assertEquals(["text 3", "text 3", "text 22", "text 22", "text 22", "text 22", "text 2", "text 1"], $query->orderDesc()->where(['=', 'stringindex', []])->column(1));
 
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
 
         // Without condition
         $all = $query->all();
@@ -250,7 +250,7 @@ class NosqlQueryTest extends TestCase
         $this->assertEquals([$rows[2], $rows[3], $rows[4], $rows[5], $rows[6], $rows[7]], $all);
 
         // =
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $query->where(['=', 1]);
         $all = $query->all();
         $this->assertCount(1, $all);
@@ -297,7 +297,7 @@ class NosqlQueryTest extends TestCase
         $this->assertEquals([], $all);
 
         // >, >=
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $query->where(['>', 1]);
         $all = $query->all();
         $this->assertCount(7, $all);
@@ -329,7 +329,7 @@ class NosqlQueryTest extends TestCase
         $this->assertEquals([$rows[5], $rows[4]], $all);
 
         // <=
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $query->where(['<', 5]);
         $all = $query->all();
         $this->assertCount(4, $all);
@@ -361,7 +361,7 @@ class NosqlQueryTest extends TestCase
         $this->assertEquals([$rows[0]], $all);
 
         // Test order
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $all = $query->all();
         $this->assertCount(8, $all);
         $this->assertEquals($rows, $all);
@@ -380,7 +380,7 @@ class NosqlQueryTest extends TestCase
     public function testGet()
     {
         $rows =  $this->makeSpaceForCmd();
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
 
         // Empty key exception
         $thrown = false;
@@ -417,7 +417,7 @@ class NosqlQueryTest extends TestCase
     {
         $rows = $this->makeSpaceForCmd();
 
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
 
         // Without condition
         $all = $query->one();
@@ -430,7 +430,7 @@ class NosqlQueryTest extends TestCase
         $this->assertEquals($rows[2], $all);
 
         // =
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $query->where(['=', 1]);
         $all = $query->one();
         $this->assertEquals($rows[0], $all);
@@ -456,7 +456,7 @@ class NosqlQueryTest extends TestCase
         $this->assertEquals($rows[0], $all);
 
         // >, >=
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $query->where(['>', 1]);
         $all = $query->one();
         $this->assertEquals($rows[1], $all);
@@ -486,7 +486,7 @@ class NosqlQueryTest extends TestCase
         $this->assertEquals($rows[5], $all);
 
         // <=
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $query->where(['<', 5]);
         $all = $query->one();
         $this->assertEquals($rows[3], $all);
@@ -508,7 +508,7 @@ class NosqlQueryTest extends TestCase
         $this->assertEquals($rows[0], $all);
 
         // Test order
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $all = $query->one();
         $this->assertEquals($rows[0], $all);
 
@@ -524,23 +524,23 @@ class NosqlQueryTest extends TestCase
     {
         $rows = $this->makeSpaceForCmd();
 
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $this->assertEquals($rows[0], $query->min());
         $this->assertEquals($rows[7], $query->max());
         $this->assertNotEquals($query->random(1000), $query->random(1));
 
         // Other index
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $tuple = $query->where(['=', 'stringindex', []])->max();
         $this->assertEquals("text 3", $tuple[1]);
 
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $tuple = $query->where(['=', 'stringindex', []])->min();
         $this->assertEquals("text 1", $tuple[1]);
 
 
         // Count
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $this->assertEquals(8, $query->count());
         $this->assertEquals(1, $query->where(1)->count());
         $this->assertEquals(1, $query->where(['=', 2])->count());
@@ -554,7 +554,7 @@ class NosqlQueryTest extends TestCase
         $this->assertEquals(0, $query->where(['>=', 'intcompositeindex', [111, 14]])->count());
 
         // Exists
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $this->assertTrue($query->where(1)->exists());
         $this->assertFalse($query->where(1111)->exists());
         $this->assertFalse($query->where(['<', 'intcompositeindex', 0])->exists());
@@ -568,7 +568,7 @@ class NosqlQueryTest extends TestCase
     {
         $rows = $this->makeSpaceForCmd();
 
-        $query = $this->getDb()->createNosqlQuery()->from('myspace');
+        $query = self::getDb()->createNosqlQuery()->from('myspace');
         $this->assertEquals(ArrayHelper::getColumn($rows, 0), $query->column());
         $this->assertEquals(ArrayHelper::getColumn($rows, 1), $query->column(1));
         $this->assertEquals(ArrayHelper::getColumn($rows, 2), $query->column(2));
@@ -589,40 +589,40 @@ class NosqlQueryTest extends TestCase
         $this->makeSpaceForCmd();
 
         $this->assertEquals(
-            $this->getDb()->createNosqlQuery()->from('myspace')->all(),
-            $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('pk')->all()
+            self::getDb()->createNosqlQuery()->from('myspace')->all(),
+            self::getDb()->createNosqlQuery()->from('myspace')->usingIndex('pk')->all()
         );
         $this->assertEquals(
-            $this->getDb()->createNosqlQuery()->from('myspace')->orderDesc()->all(),
-            $this->getDb()->createNosqlQuery()->orderDesc()->from('myspace')->usingIndex('pk')->all()
-        );
-
-        $this->assertEquals(
-            $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1),
-            $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->column(1)
+            self::getDb()->createNosqlQuery()->from('myspace')->orderDesc()->all(),
+            self::getDb()->createNosqlQuery()->orderDesc()->from('myspace')->usingIndex('pk')->all()
         );
 
         $this->assertEquals(
-            $this->getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->orderDesc()->column(1),
-            $this->getDb()->createNosqlQuery()->from('myspace')->orderDesc()->usingIndex('stringindex')->column(1)
+            self::getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->column(1),
+            self::getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->column(1)
+        );
+
+        $this->assertEquals(
+            self::getDb()->createNosqlQuery()->from('myspace')->where(['=', 'stringindex', []])->orderDesc()->column(1),
+            self::getDb()->createNosqlQuery()->from('myspace')->orderDesc()->usingIndex('stringindex')->column(1)
         );
 
         // usingIndex doesn't affect (where > using index)
         $this->assertEquals(
             ['text 22'],
-            $this->getDb()->createNosqlQuery()->from('myspace')->orderDesc()->usingIndex('stringindex')->where(['=', 'pk', 3])->column(1)
+            self::getDb()->createNosqlQuery()->from('myspace')->orderDesc()->usingIndex('stringindex')->where(['=', 'pk', 3])->column(1)
         );
 
-        $res = $this->getDb()->createNosqlQuery()->from('myspace')->max();
+        $res = self::getDb()->createNosqlQuery()->from('myspace')->max();
         $this->assertEquals(8, $res[0]);
 
-        $res = $this->getDb()->createNosqlQuery()->from('myspace')->min();
+        $res = self::getDb()->createNosqlQuery()->from('myspace')->min();
         $this->assertEquals(1, $res[0]);
 
-        $res = $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->min();
+        $res = self::getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->min();
         $this->assertEquals('text 1', $res[1]);
 
-        $res = $this->getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->max();
+        $res = self::getDb()->createNosqlQuery()->from('myspace')->usingIndex('stringindex')->max();
         $this->assertEquals('text 3', $res[1]);
     }
 

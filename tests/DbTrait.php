@@ -11,14 +11,11 @@ trait DbTrait
 {
     use SchemaBuilderTrait;
 
-    /**
-     * @return \mhthnz\tarantool\Connection
-     * @throws \Exception
-     */
     protected function getDb()
     {
         return self::getConnection();
     }
+
 
     public function dropConstraints()
     {
