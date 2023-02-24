@@ -109,10 +109,6 @@ class MigrationTest extends TestCase
 
     public function testCreateLongNamedMigration()
     {
-        $this->setOutputCallback(function ($output) {
-            return null;
-        });
-
         $migrationName = str_repeat('a', 180);
 
         $this->expectException('yii\console\Exception');

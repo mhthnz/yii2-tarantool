@@ -113,12 +113,17 @@ class DbManagerTest extends ManagerTestCase
      */
     protected function createMigrateController(array $config = [])
     {
-        $module = $this->getMockBuilder('yii\\base\\Module')
-            ->setMethods(['fake'])
-            ->setConstructorArgs(['console'])
+        $module = $this->getMockBuilder('yii\\base\\Module');
+        if (method_exists($module, 'setMethods')) {
+            $module->setMethods(['fake']);
+        } else {
+            $module->addMethods(['fake']);
+        }
+        $mockObj = $module->setConstructorArgs(['console'])
             ->getMock();
+
         $class = $this->migrateControllerClass;
-        $migrateController = new $class('migrate', $module);
+        $migrateController = new $class('migrate', $mockObj);
         $migrateController->interactive = false;
         $migrateController->migrationPath = $this->migrationPath;
         return Yii::configure($migrateController, $config);
