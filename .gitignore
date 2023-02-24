@@ -10,3 +10,4 @@ runtime
 tests/migrations
 tests/app_migrations
 tests/ext_migrations
+/.phpunit.cache

@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: composer update --no-progress --prefer-dist --optimize-autoloader
       - name: Run unit tests with coverage
-        run: XDEBUG_MODE=coverage vendor/bin/phpunit --verbose --coverage-clover=coverage.clover --colors=always
+        run: XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover=coverage.clover --colors=always
         env:
           TARANTOOL_DSN: tcp://guest@127.0.0.1:3301/
       - name: Upload code coverage
