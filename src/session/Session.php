@@ -36,12 +36,6 @@ class Session extends MultiFieldSession {
     public $sessionTable = '{{%session}}';
 
     /**
-     * Session space name quoted out of % and {}.
-     * @var string|null
-     */
-    public $rawSpaceName;
-
-    /**
      * @var Connection
      */
     public $db = 'tarantool';
@@ -61,9 +55,6 @@ class Session extends MultiFieldSession {
     {
         parent::init();
         $this->db = Instance::ensure($this->db, \mhthnz\tarantool\Connection::class);
-        if ($this->rawSpaceName === null) {
-            $this->rawSpaceName = $this->db->getSchema()->getRawTableName($this->sessionTable);
-        }
     }
 
     /**
