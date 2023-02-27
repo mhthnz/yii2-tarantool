@@ -96,6 +96,7 @@ trait DbTrait
 
 			'CONSTRAINT "pk-session" PRIMARY KEY ("id")',
 		], $opt);
+        $this->getDb()->createCommand()->createIndex('ix-session[expire]', (new Session())->sessionTable, ['expire']);
 	}
 
 	public function dropTableSession()

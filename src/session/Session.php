@@ -3,17 +3,13 @@
 namespace mhthnz\tarantool\session;
 
 use MessagePack\Type\Bin;
-use mhthnz\tarantool\ActiveRecord;
 use mhthnz\tarantool\Connection;
-use Tarantool\Client\Schema\Operations;
-use Throwable;
 use Yii;
 use yii\base\InvalidConfigException;
-use yii\db\ActiveQuery;
 use yii\db\Query;
 use yii\di\Instance;
-use yii\helpers\ArrayHelper;
 use yii\web\MultiFieldSession;
+use Exception;
 
 class Session extends MultiFieldSession {
 
@@ -202,6 +198,7 @@ class Session extends MultiFieldSession {
      * @internal Do not call this method directly.
      * @param string $id session ID
      * @return bool whether session is destroyed successfully
+     * @throws Exception
      */
     public function destroySession($id)
     {
@@ -217,6 +214,7 @@ class Session extends MultiFieldSession {
      * @internal Do not call this method directly.
      * @param int $maxLifetime the number of seconds after which data will be seen as 'garbage' and cleaned up.
      * @return bool whether session is GCed successfully
+     * @throws \yii\db\Exception
      */
     public function gcSession($maxLifetime)
     {

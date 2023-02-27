@@ -32,6 +32,21 @@ class SessionTest extends TestCase
 		parent::tearDown();
 	}
 
+    /**
+     * @return void
+     */
+    protected function createSessionTableUserID()
+    {
+        $this->createTable('session_user', [
+            'id' => $this->string()->notNull(),
+            'expire' => $this->integer()->notNull(),
+            'data' => $this->binary()->notNull(),
+            'user_id' => $this->integer(),
+            'CONSTRAINT "pk-session" PRIMARY KEY ("id")',
+        ]);
+        $this->getDb()->createCommand()->createIndex('ix-session[expire]', 'session_user', ['expire']);
+    }
+
 	// Tests :
 
 	/**
@@ -47,6 +62,9 @@ class SessionTest extends TestCase
 		$this->assertEquals('', $session->readSession('test'));
 	}
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testInitializeWithConfig()
     {
         // should produce no exceptions
@@ -109,13 +127,7 @@ class SessionTest extends TestCase
             ]
         ]);
         $this->dropSpacesIfExist(['session_user']);
-        $this->createTable('session_user', [
-            'id' => $this->string()->notNull(),
-            'expire' => $this->integer()->notNull(),
-            'data' => $this->binary()->notNull(),
-            'user_id' => $this->integer(),
-            'CONSTRAINT "pk-session" PRIMARY KEY ("id")',
-        ]);
+        $this->createSessionTableUserID();
 
         $session = new Session(['sessionTable' => 'session_user', 'rawSpaceName' => 'session_user']);
         $session->open();
