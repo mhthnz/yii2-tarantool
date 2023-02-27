@@ -129,7 +129,7 @@ class SessionTest extends TestCase
         $this->dropSpacesIfExist(['session_user']);
         $this->createSessionTableUserID();
 
-        $session = new Session(['sessionTable' => 'session_user', 'rawSpaceName' => 'session_user']);
+        $session = new Session(['sessionTable' => 'session_user']);
         $session->open();
 
         $session->set('user_id', 12345);
