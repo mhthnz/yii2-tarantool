@@ -19,7 +19,7 @@ class m230214_190000_create_table_session extends Migration
 		$this->createTable($this->tableName, [
 			'id' => $this->string()->notNull(),
 			'expire' => $this->integer()->notNull(),
-			'data' => $this->text()->notNull(),
+			'data' => $this->binary()->notNull(),
 
 			'CONSTRAINT "pk-session" PRIMARY KEY ("id")',
 		]);

@@ -2,198 +2,255 @@
 
 namespace mhthnz\tarantool\session;
 
+use MessagePack\Type\Bin;
 use mhthnz\tarantool\ActiveRecord;
-use mhthnz\tarantool\session\models\SessionSpace;
+use mhthnz\tarantool\Connection;
 use Tarantool\Client\Schema\Operations;
 use Throwable;
 use Yii;
 use yii\base\InvalidConfigException;
+use yii\db\ActiveQuery;
 use yii\db\Query;
+use yii\di\Instance;
+use yii\helpers\ArrayHelper;
+use yii\web\MultiFieldSession;
 
-class Session extends \yii\web\Session {
-	/** @var string Tarantool ActiveRecord class name for sessions.
-	 * The space should be pre-created as follows:
-	 *
-	 * ```php
-	 * public function up() {
-	 *     $this->createTable('sessions', [
-	 *         'id'     => $this->string()->notNull(),
-	 *         'expire' => $this->integer()->notNull(),
-	 *         'data'   => $this->text()->notNull(),
-	 *
-	 *         'CONSTRAINT "pk-sessions" PRIMARY KEY ("id")',
-	 *     ]);
-	 *
-	 *     $this->createIndex('ix-sessions[expire]', 'sessions', ['expire']);
-	 * }
-	 * ```
-	 */
-	public $spaceClass = SessionSpace::class;
+class Session extends MultiFieldSession {
 
-	/** @var ActiveRecord Tarantool Space Model for sessions */
-	private $spaceModel;
+    /**
+     * @var string the name of the DB table that stores the session data.
+     * The table should be pre-created as follows:
+     *
+     * The space should be pre-created as follows:
+     *
+     * ```php
+     * public function up() {
+     *     $this->createTable('sessions', [
+     *         'id'     => $this->string()->notNull(),
+     *         'expire' => $this->integer()->notNull(),
+     *         'data'   => $this->binary()->notNull(),
+     *
+     *         'CONSTRAINT "pk-sessions" PRIMARY KEY ("id")',
+     *     ]);
+     *
+     *     $this->createIndex('ix-sessions[expire]', 'sessions', ['expire']);
+     * }
+     * ```
+     */
+    public $sessionTable = '{{%session}}';
 
-	/** @var string Raw Space Name in Tarantool */
-	private $rawSpaceName;
+    /**
+     * Session space name quoted out of % and {}.
+     * @var string|null
+     */
+    public $rawSpaceName;
 
-	/**
-	 * Initializes the Session component.
-	 * @throws InvalidConfigException if [[spaceClass]] is invalid.
-	 */
-	public function init()
-	{
-		$this->spaceModel = Yii::createObject($this->spaceClass);
-		if (!$this->spaceModel instanceof ActiveRecord) {
-			throw new InvalidConfigException('Session space model must be instance of ' . ActiveRecord::class);
-		}
+    /**
+     * @var Connection
+     */
+    public $db = 'tarantool';
 
-		// Consider `tablePrefix`
-		$this->rawSpaceName = $this->spaceModel::getDb()->getSchema()->getRawTableName($this->spaceModel::tableName());
+    /**
+     * @var array Session fields to be written into session table columns
+     */
+    protected $fields = [];
 
-		parent::init();
-	}
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getUseCustomStorage()
-	{
-		return true;
-	}
+    /**
+     * Initializes the DbSession component.
+     * This method will initialize the [[db]] property to make sure it refers to a valid DB connection.
+     * @throws InvalidConfigException if [[db]] is invalid.
+     */
+    public function init()
+    {
+        parent::init();
+        $this->db = Instance::ensure($this->db, \mhthnz\tarantool\Connection::class);
+        if ($this->rawSpaceName === null) {
+            $this->rawSpaceName = $this->db->getSchema()->getRawTableName($this->sessionTable);
+        }
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function openSession($savePath, $sessionName)
-	{
-		if ($this->getUseStrictMode()) {
-			$id = $this->getId();
-			if (!$this->getReadQuery($id)->exists()) {
-				//This session id does not exist, mark it for forced regeneration
-				$this->_forceRegenerateId = $id;
-			}
-		}
+    /**
+     * {@inheritdoc}
+     */
+    public function openSession($savePath, $sessionName)
+    {
+        if ($this->getUseStrictMode()) {
+            $id = $this->getId();
+            if (!$this->getReadQuery($id)->exists($this->db)) {
+                //This session id does not exist, mark it for forced regeneration
+                $this->_forceRegenerateId = $id;
+            }
+        }
 
-		return parent::openSession($savePath, $sessionName);
-	}
+        return parent::openSession($savePath, $sessionName);
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function regenerateID($deleteOldSession = false)
-	{
-		$oldID = session_id();
+    /**
+     * {@inheritdoc}
+     */
+    public function regenerateID($deleteOldSession = false)
+    {
+        $oldID = session_id();
 
-		// if no session is started, there is nothing to regenerate
-		if (empty($oldID)) {
-			return;
-		}
+        // if no session is started, there is nothing to regenerate
+        if (empty($oldID)) {
+            return;
+        }
 
-		parent::regenerateID(false);
-		$newID = session_id();
+        parent::regenerateID(false);
+        $newID = session_id();
+        // if session id regeneration failed, no need to create/update it.
+        if (empty($newID)) {
+            Yii::warning('Failed to generate new session ID', __METHOD__);
+            return;
+        }
 
-		// if session id regeneration failed, no need to create/update it.
-		if (empty($newID)) {
-			Yii::warning('Failed to generate new session ID', __METHOD__);
+        $row = $this->db->useMaster(function() use ($oldID) {
+            return (new Query())->from($this->sessionTable)
+                ->where(['id' => $oldID])
+                ->createCommand($this->db)
+                ->queryOne();
+        });
 
-			return;
-		}
+        if ($row !== false && $this->getIsActive()) {
+            if ($deleteOldSession) {
+                $this->db->createCommand()
+                    ->update($this->sessionTable, ['id' => $newID], ['id' => $oldID])
+                    ->execute();
+            } else {
+                $row = $this->typecastFields($row);
+                $row['id'] = $newID;
+                $this->db->createCommand()
+                    ->insert($this->sessionTable, $row)
+                    ->execute();
+            }
+        }
+    }
 
-		if ($deleteOldSession) {
-			$this->spaceModel::deleteAll(['id' => $oldID]);
-		}
+    /**
+     * {@inheritdoc}
+     */
+    public function close()
+    {
+        if ($this->getIsActive()) {
+            // prepare writeCallback fields before session closes
+            $this->fields = $this->composeFields();
+            YII_DEBUG ? session_write_close() : @session_write_close();
+        }
+    }
 
-		$expire = time() + $this->getTimeout();
+    /**
+     * {@inheritdoc}
+     */
+    public function readSession($id)
+    {
+        $query = $this->getReadQuery($id);
 
-		// NoSQL instead of SQL, to prevent Schema/PK retrive
-		$this->spaceModel::getDb()->createNosqlCommand()->upsert(
-			$this->rawSpaceName,
-			[$newID, $expire, ''],
-			Operations::set(1, $expire)
-		)->execute();
-	}
+        if ($this->readCallback !== null) {
+            $fields = $query->one($this->db);
+            return $fields === false ? '' : $this->extractData($fields);
+        }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function close()
-	{
-		if ($this->getIsActive()) {
-			YII_DEBUG ? session_write_close() : @session_write_close();
-		}
-	}
+        $data = $query->select(['data'])->scalar($this->db);
+        return $data === false ? '' : $data;
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function readSession($id)
-	{
-		$data = $this->getReadQuery($id)->select(['data'])->scalar();
+    /**
+     * {@inheritdoc}
+     */
+    public function writeSession($id, $data)
+    {
+        if ($this->getUseStrictMode() && $id === $this->_forceRegenerateId) {
+            //Ignore write when forceRegenerate is active for this id
+            return true;
+        }
 
-		return (false === $data ? '' : $data);
-	}
+        // exception must be caught in session write handler
+        // https://www.php.net/manual/en/function.session-set-save-handler.php#refsect1-function.session-set-save-handler-notes
+        try {
+            // ensure backwards compatability (fixed #9438)
+            if ($this->writeCallback && !$this->fields) {
+                $this->fields = $this->composeFields();
+            }
+            // ensure data consistency
+            if (!isset($this->fields['data'])) {
+                $this->fields['data'] = $data;
+            } else {
+                $_SESSION = $this->fields['data'];
+            }
+            // ensure 'id' and 'expire' are never affected by [[writeCallback]]
+            $this->fields = array_merge($this->fields, [
+                'id' => $id,
+                'expire' => time() + $this->getTimeout(),
+            ]);
+            $this->fields = $this->typecastFields($this->fields);
+            $this->db->createCommand()->insertOrReplace(
+                $this->sessionTable,
+                $this->fields
+            )->execute();
+            $this->fields = [];
+        } catch (\Exception $e) {
+            Yii::$app->errorHandler->handleException($e);
+            return false;
+        }
+        return true;
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function writeSession($id, $data)
-	{
-		if ($this->getUseStrictMode() && $id === $this->_forceRegenerateId) {
-			//Ignore write when forceRegenerate is active for this id
-			return true;
-		}
+    /**
+     * Session destroy handler.
+     * @internal Do not call this method directly.
+     * @param string $id session ID
+     * @return bool whether session is destroyed successfully
+     */
+    public function destroySession($id)
+    {
+        $this->db->createCommand()
+            ->delete($this->sessionTable, ['id' => $id])
+            ->execute();
 
-		// exception must be caught in session write handler
-		// https://www.php.net/manual/en/function.session-set-save-handler.php#refsect1-function.session-set-save-handler-notes
-		try {
-			$expire = time() + $this->getTimeout();
+        return true;
+    }
 
-			// NoSQL instead of SQL, to prevent Schema/PK retrive
-			$this->spaceModel::getDb()->createNosqlCommand()->upsert(
-				$this->rawSpaceName,
-				[$id, $expire, $data],
-				Operations::set(1, $expire)->andSet(2, $data)
-			)->execute();
-		} catch (Throwable $e) {
-			Yii::$app->errorHandler->handleException($e);
+    /**
+     * Session GC (garbage collection) handler.
+     * @internal Do not call this method directly.
+     * @param int $maxLifetime the number of seconds after which data will be seen as 'garbage' and cleaned up.
+     * @return bool whether session is GCed successfully
+     */
+    public function gcSession($maxLifetime)
+    {
+        $this->db->createCommand()
+            ->delete($this->sessionTable, '[[expire]]<:expire', [':expire' => time()])
+            ->execute();
 
-			return false;
-		}
+        return true;
+    }
 
-		return true;
-	}
+    /**
+     * Generates a query to get the session from Tarantrool.
+     * @param string $id The id of the session
+     * @return Query
+     */
+    protected function getReadQuery($id)
+    {
+        return (new Query())
+            ->select("*")
+            ->from($this->sessionTable)
+            ->where('[[expire]]>:expire AND [[id]]=:id', [':expire' => time(), ':id' => $id]);
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function destroySession($id)
-	{
-		$this->spaceModel::deleteAll(['id' => $id]);
+    /**
+     * Convert serialized session data string into binary.
+     * @param array $fields Fields, that will be passed to Tarantool. Key - name, Value - value
+     * @return array
+     */
+    protected function typecastFields($fields)
+    {
+        if (isset($fields['data']) && !is_array($fields['data']) && !is_object($fields['data'])) {
+            $fields['data'] = new Bin($fields['data']);
+        }
 
-		return true;
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function gcSession($maxLifetime)
-	{
-		// NoSQL haven't option for multi row delete
-		$this->spaceModel::deleteAll('[[expire]]<=:expire', [':expire' => time()]);
-
-		return true;
-	}
-
-	/**
-	 * Generates a query to get the session from Tarantrool.
-	 * @param string $id The id of the session
-	 * @return Query
-	 */
-	protected function getReadQuery($id)
-	{
-		return $this->spaceModel
-			->find()
-			->where('[[expire]]>:expire AND [[id]]=:id', [':expire' => time(), ':id' => $id])
-		;
-	}
+        return $fields;
+    }
 }

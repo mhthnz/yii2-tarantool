@@ -77,6 +77,7 @@ Features
 * Nosql [`Query`](docs/NOSQL.md#query) and [`Command`](docs/NOSQL.md#command) [for performing nosql requests](docs/NOSQL.md)
 * [Lua validator](docs/LUA-VALIDATOR.md)
 * [Rbac db source](docs/RBAC.md)
+* [Session] (docs/SESSION.md) 
 
 Future plans
 ------------
@@ -87,7 +88,7 @@ Future plans
 * Connection slaves support
 * Queue
 * Cache
-* Sessions
+
 
 Running tests
 ------------

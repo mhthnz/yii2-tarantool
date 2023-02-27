@@ -3,6 +3,7 @@
 namespace mhthnz\tarantool\tests;
 
 use mhthnz\tarantool\session\Session;
+use yii\db\Query;
 
 class SessionTest extends TestCase
 {
@@ -46,6 +47,19 @@ class SessionTest extends TestCase
 		$this->assertEquals('', $session->readSession('test'));
 	}
 
+    public function testInitializeWithConfig()
+    {
+        // should produce no exceptions
+        $session = new Session([
+            'useCookies' => true,
+        ]);
+
+        $session->writeSession('test', 'session data');
+        $this->assertEquals('session data', $session->readSession('test'));
+        $session->destroySession('test');
+        $this->assertEquals('', $session->readSession('test'));
+    }
+
 	/**
 	 * @depends testReadWrite
 	 * @runInSeparateProcess
@@ -57,13 +71,77 @@ class SessionTest extends TestCase
 		$session->writeSession('new', 'new data');
 		$session->writeSession('expire', 'expire data');
 
-		(new $session->spaceClass())::updateAll(['expire' => time() - 10000], ['id' => 'expire']);
+		$this->getDb()->createCommand()->update($session->sessionTable, ['expire' => time() - 10000], ['id' => 'expire'])->execute();
 
 		$session->gcSession(0);
 
 		$this->assertEquals('', $session->readSession('expire'));
 		$this->assertEquals('new data', $session->readSession('new'));
 	}
+
+    /**
+     * @depends testReadWrite
+     */
+    public function testWriteCustomField()
+    {
+        $session = new Session();
+
+        $session->writeCallback = function ($session) {
+            return ['data' => 'changed by callback data'];
+        };
+
+        $session->writeSession('test', 'session data');
+
+        $this->assertSame('changed by callback data', $session->readSession('test'));
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testWriteCustomFieldWithUserId()
+    {
+        $this->mockApplication([
+            'components' => [
+                'tarantool' => [
+                    'class' => \mhthnz\tarantool\Connection::class,
+                    'dsn' => $this->getDsn(),
+                ],
+            ]
+        ]);
+        $this->dropSpacesIfExist(['session_user']);
+        $this->createTable('session_user', [
+            'id' => $this->string()->notNull(),
+            'expire' => $this->integer()->notNull(),
+            'data' => $this->binary()->notNull(),
+            'user_id' => $this->integer(),
+            'CONSTRAINT "pk-session" PRIMARY KEY ("id")',
+        ]);
+
+        $session = new Session(['sessionTable' => 'session_user', 'rawSpaceName' => 'session_user']);
+        $session->open();
+
+        $session->set('user_id', 12345);
+
+        $session->writeCallback = function ($session) {
+            return ['user_id' => $session['user_id']];
+        };
+
+        // here used to be error, fixed issue #9438
+        $session->close();
+        $session->readCallback = function ($fields) {
+            return ['user_id_new' => $fields['user_id']];
+        };
+        $this->assertEquals(12345, (new Query())->select('user_id')->from($session->sessionTable)->scalar($this->getDb()));
+
+        // reopen & read session from DB
+        $session->open();
+        $this->assertEquals(12345, $session->get('user_id_new'));
+        $loadedUserId = empty($session['user_id']) ? null : $session['user_id'];
+        $this->assertSame($loadedUserId, 12345);
+        $session->close();
+
+        $this->dropSpacesIfExist(['session_user']);
+    }
 
 	protected function buildObjectForSerialization()
 	{
@@ -104,19 +182,34 @@ class SessionTest extends TestCase
 	/**
 	 * @runInSeparateProcess
 	 */
-	public function testInstantiate()
-	{
-		$oldTimeout = ini_get('session.gc_maxlifetime');
+    public function testInstantiate()
+    {
+        $this->mockApplication([
+            'components' => [
+                'tarantool' => [
+                    'class' => \mhthnz\tarantool\Connection::class,
+                    'dsn' => $this->getDsn(),
+                ],
+            ]
+        ]);
+        $oldTimeout = ini_get('session.gc_maxlifetime');
+        // unset Yii::$app->db to make sure that all queries are made against sessionDb
+        \Yii::$app->set('sessionDb', \Yii::$app->tarantool);
+        \Yii::$app->set('tarantool', null);
 
-		$session = new Session([
-			'timeout' => 300,
-		]);
+        $session = new Session([
+            'timeout' => 300,
+            'db' => 'sessionDb',
+        ]);
 
-		$this->assertSame(300, $session->timeout);
-		$session->close();
+        $this->assertSame(\Yii::$app->sessionDb, $session->db);
+        $this->assertSame(300, $session->timeout);
+        $session->close();
 
-		ini_set('session.gc_maxlifetime', $oldTimeout);
-	}
+        \Yii::$app->set('db', \Yii::$app->sessionDb);
+        \Yii::$app->set('sessionDb', null);
+        ini_set('session.gc_maxlifetime', $oldTimeout);
+    }
 
 	/**
 	 * @runInSeparateProcess

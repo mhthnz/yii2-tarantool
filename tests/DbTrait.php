@@ -2,6 +2,7 @@
 
 namespace mhthnz\tarantool\tests;
 
+use mhthnz\tarantool\session\Session;
 use mhthnz\tarantool\tests\classes\ActiveRecord;
 use mhthnz\tarantool\tests\classes\ChildAR;
 use mhthnz\tarantool\tests\classes\ParentAR;
@@ -88,10 +89,10 @@ trait DbTrait
 
 	public function createTableSession($opt = null)
 	{
-		$this->createTable('session', [
+		$this->createTable((new Session())->sessionTable, [
 			'id' => $this->string()->notNull(),
 			'expire' => $this->integer()->notNull(),
-			'data' => $this->text()->notNull(),
+			'data' => $this->binary()->notNull(),
 
 			'CONSTRAINT "pk-session" PRIMARY KEY ("id")',
 		], $opt);

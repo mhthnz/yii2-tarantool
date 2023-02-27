@@ -406,4 +406,38 @@ class Command extends \yii\db\Command
         $sql = $this->db->getQueryBuilder()->dropIndex($name, $table);
         return $this->setSql($sql)->requireTableSchemaRefresh($table);
     }
+
+    /**
+     * Creates an INSERT Command that works like upsert.
+     *
+     * For example,
+     *
+     * ```php
+     * $connection->createCommand()->insertOrReplace('user', [
+     *     'id' => 10,
+     *     'name' => 'Sam',
+     *     'age' => 30,
+     * ])->execute();
+     * ```
+     *
+     * The method will properly escape the table and column names.
+     * If the row with id 10 already exists, other fields will be replaced.
+     * @see https://github.com/tarantool/tarantool/wiki/SQL%3A-ON-CONFLICT-clause-for-INSERT,-UPDATE-statements
+     *
+     *
+     * Note that the created command is not executed until [[execute()]] is called.
+     *
+     * @param string $table the table that new rows will be inserted into.
+     * @param array|\yii\db\Query $columns the column data (name => value) to be inserted into the table or instance
+     * of [[yii\db\Query|Query]] to perform INSERT INTO ... SELECT SQL statement.
+     * Passing of [[yii\db\Query|Query]] is available since version 2.0.11.
+     * @return $this the command object itself
+     */
+    public function insertOrReplace($table, $columns)
+    {
+        $params = [];
+        $sql = $this->db->getQueryBuilder()->insertOrReplace($table, $columns, $params);
+
+        return $this->setSql($sql)->bindValues($params);
+    }
 }
