@@ -5,8 +5,7 @@ namespace mhthnz\tarantool;
 use MessagePack\BufferUnpacker;
 use MessagePack\Packer;
 use MessagePack\PackOptions;
-use MessagePack\TypeTransformer\BinTransformer;
-use MessagePack\TypeTransformer\CanPack;
+use MessagePack\TypeTransformer\StreamTransformer;
 use MessagePack\UnpackOptions;
 use mhthnz\tarantool\nosql\Query;
 use Tarantool\Client\Exception\ClientException;
@@ -581,12 +580,12 @@ class Connection extends Component
         if ($clientClass === null) {
             $clientClass = 'mhthnz\tarantool\Client';
         }
-        return $clientClass::fromDsn($this->dsn, $this->getPacker([new BinTransformer()]))
+        return $clientClass::fromDsn($this->dsn, $this->getPacker([new StreamTransformer()]))
             ->withMiddleware(new LastInsertIDMiddleware($this));
     }
 
     /**
-     * @param array<int, CanPack> $transformers
+     * @param array<int, StreamTransformer> $transformers
      * @return PurePacker
      */
     protected function getPacker($transformers = [])
