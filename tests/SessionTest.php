@@ -145,6 +145,13 @@ class SessionTest extends TestCase
         };
         $this->assertEquals(12345, (new Query())->select('user_id')->from($session->sessionTable)->scalar($this->getDb()));
 
+        // Regenerate id
+        $session->open();
+        $oldID = $session->getId();
+        $session->regenerateID(true);
+        $this->assertNotEquals($oldID, $session->getId());
+        $session->close();
+
         // reopen & read session from DB
         $session->open();
         $this->assertEquals(12345, $session->get('user_id_new'));
