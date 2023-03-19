@@ -21,7 +21,7 @@ class Session extends MultiFieldSession {
      *
      * ```php
      * public function up() {
-     *     $this->createTable('sessions', [
+     *     $this->createTable('session', [
      *         'id'     => $this->string()->notNull(),
      *         'expire' => $this->integer()->notNull(),
      *         'data'   => $this->binary()->notNull(),
@@ -29,7 +29,7 @@ class Session extends MultiFieldSession {
      *         'CONSTRAINT "pk-sessions" PRIMARY KEY ("id")',
      *     ]);
      *
-     *     $this->createIndex('ix-sessions[expire]', 'sessions', ['expire']);
+     *     $this->createIndex('ix-sessions[expire]', 'session', ['expire']);
      * }
      * ```
      */

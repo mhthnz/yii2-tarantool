@@ -15,6 +15,14 @@ return [
 ];
 ```
 
+Init session table migration
+----------------------
+* [Set up tarantool migrations](MIGRATIONS.md)
+* Run session migration
+```bash
+$ php yii tarantool-migrate --migrationNamespaces=\\mhthnz\\tarantool\\session\\migrations
+```
+
 Storage
 ----------------------
 If you want to use different storage like vinyl - you have to copy migration:
