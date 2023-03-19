@@ -103,15 +103,14 @@ class Session extends MultiFieldSession {
         if ($row !== false && $this->getIsActive()) {
             if ($deleteOldSession) {
                 $this->db->createCommand()
-                    ->update($this->sessionTable, ['id' => $newID], ['id' => $oldID])
-                    ->execute();
-            } else {
-                $row = $this->typecastFields($row);
-                $row['id'] = $newID;
-                $this->db->createCommand()
-                    ->insert($this->sessionTable, $row)
+                    ->delete($this->sessionTable, ['id' => $oldID])
                     ->execute();
             }
+            $row = $this->typecastFields($row);
+            $row['id'] = $newID;
+            $this->db->createCommand()
+                ->insert($this->sessionTable, $row)
+                ->execute();
         }
     }
 
