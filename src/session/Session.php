@@ -109,7 +109,7 @@ class Session extends MultiFieldSession {
             $row = $this->typecastFields($row);
             $row['id'] = $newID;
             $this->db->createCommand()
-                ->insert($this->sessionTable, $row)
+                ->insertOrReplace($this->sessionTable, $row, false)
                 ->execute();
         }
     }
@@ -173,7 +173,8 @@ class Session extends MultiFieldSession {
             $this->fields = $this->typecastFields($this->fields);
             $this->db->createCommand()->insertOrReplace(
                 $this->sessionTable,
-                $this->fields
+                $this->fields,
+                false
             )->execute();
             $this->fields = [];
         } catch (\Exception $e) {

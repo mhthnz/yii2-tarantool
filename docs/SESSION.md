@@ -7,7 +7,7 @@ Configuration:
 return [
     'components' => [
         'session' => [
-            'class' => '\mhthnz\tarantool\Session',
+            'class' => '\mhthnz\tarantool\session\Session',
             // 'db' => 'mytarantool',  // Tarantool component ID, 'tarantool' by default
             // 'sessionTable' => 'my_session', // Table name for storing session data. '{{%session}}' by default
         ],

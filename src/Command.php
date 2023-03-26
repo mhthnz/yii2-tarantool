@@ -431,12 +431,13 @@ class Command extends \yii\db\Command
      * @param array|\yii\db\Query $columns the column data (name => value) to be inserted into the table or instance
      * of [[yii\db\Query|Query]] to perform INSERT INTO ... SELECT SQL statement.
      * Passing of [[yii\db\Query|Query]] is available since version 2.0.11.
+     * @param bool $loadSchema table schema will be load for making insert statement
      * @return $this the command object itself
      */
-    public function insertOrReplace($table, $columns)
+    public function insertOrReplace($table, $columns, $loadSchema = true)
     {
         $params = [];
-        $sql = $this->db->getQueryBuilder()->insertOrReplace($table, $columns, $params);
+        $sql = $this->db->getQueryBuilder()->insertOrReplace($table, $columns, $params, $loadSchema);
 
         return $this->setSql($sql)->bindValues($params);
     }
