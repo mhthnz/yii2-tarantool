@@ -10,6 +10,8 @@ Tarantool connector for yii2 framework
 
 Documentation is here: [docs/README.md](docs/README.md)
 
+Check out yii2 basic tarantool application: [https://github.com/mhthnz/yii2-basic-tarantool-app](https://github.com/mhthnz/yii2-basic-tarantool-app)
+
 Reqirements
 ------------
 
