@@ -6,7 +6,7 @@ namespace mhthnz\tarantool\tests;
 use MessagePack\BufferUnpacker;
 use MessagePack\Packer;
 use MessagePack\PackOptions;
-use MessagePack\TypeTransformer\BinTransformer;
+use MessagePack\TypeTransformer\StreamTransformer;
 use MessagePack\UnpackOptions;
 use mhthnz\tarantool\Client;
 use mhthnz\tarantool\LastInsertIDMiddleware;
@@ -199,7 +199,7 @@ class ClientTest extends TestCase
             [
                 function() {
                     return Client::fromDsn(TestCase::getParsedDsn('/?persistent=false'), new PurePacker(
-                        new Packer(PackOptions::FORCE_STR, [new BinTransformer()]),
+                        new Packer(PackOptions::FORCE_STR, [new StreamTransformer()]),
                         new BufferUnpacker('', UnpackOptions::BIGINT_AS_DEC, [new ErrorExtension()])
                     ))->withMiddleware(new LastInsertIDMiddleware(TestCase::getDb()));
                 }

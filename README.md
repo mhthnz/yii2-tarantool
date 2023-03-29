@@ -19,6 +19,8 @@ Reqirements
 ![Tarantool version](https://img.shields.io/badge/tarantool-%3E%3D%202.4.1-blue)
 ![Yii2 version](https://img.shields.io/badge/yii2-%3E%3D%202.0.35-blue)
 
+If you are using php **7.1**, try [1.0.6 version](https://github.com/mhthnz/yii2-tarantool/releases/tag/v1.0.6). Any later versions require php **7.2**.
+
 Installation
 ------------
 
