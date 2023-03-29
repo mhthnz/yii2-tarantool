@@ -11,10 +11,10 @@
         }
     ],
     "require": {
-        "php": "^7.1|^8",
+        "php": "^7.2.5|^8",
         "yiisoft/yii2": "~2.0.35",
-        "tarantool/client": "^0.9.0",
-        "rybakit/msgpack": "^0.8.0"
+        "tarantool/client": "^0.10.0",
+        "rybakit/msgpack": "^0.9.1"
     },
     "require-dev": {
         "phpunit/phpunit": ">=7",
