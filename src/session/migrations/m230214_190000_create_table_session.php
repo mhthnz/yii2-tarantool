@@ -9,7 +9,15 @@ use mhthnz\tarantool\Migration;
  */
 class m230214_190000_create_table_session extends Migration
 {
-	private $tableName = '{{%session}}';
+    /**
+     * @var string
+     */
+	protected $tableName = '{{%session}}';
+
+    /**
+     * @var string memtx|vinyl
+     */
+    protected $engine = 'memtx';
 
 	/**
 	 * {@inheritdoc}
@@ -22,7 +30,7 @@ class m230214_190000_create_table_session extends Migration
 			'data' => $this->binary()->notNull(),
 
 			'CONSTRAINT "pk-session" PRIMARY KEY ("id")',
-		]);
+		], "WITH ENGINE='{$this->engine}'");
 
 		$this->createIndex('ix-session[expire]', $this->tableName, ['expire']);
 	}

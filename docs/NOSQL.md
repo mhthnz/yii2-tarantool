@@ -193,4 +193,9 @@ $conn->createNosqlCommand(new SelectRequest($spaceID, $indexID, $key, $offset, $
 ->min()->queryOne();
 $conn->createNosqlCommand(new SelectRequest($spaceID, $indexID, $key, $offset, $limit, IteratorTypes::EQ))
 ->random()->queryOne();
+
+// Enable/disable profiling in nosql command
+$cmd = $conn->createNosqlCommand()->insert('spacename', [1, "name", "2021-03-12", 12]);
+$cmd->enableProfiling = false;
+$cmd->execute();
 ```

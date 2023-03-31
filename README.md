@@ -82,6 +82,7 @@ Features
 * [Lua validator](docs/LUA-VALIDATOR.md)
 * [Rbac db source](docs/RBAC.md)
 * [Session](docs/SESSION.md) 
+* [Cache](docs/CACHE-EXPIRATIOND.md) (by [expirationd](https://github.com/tarantool/expirationd), [docs](https://tarantool.github.io/expirationd/))
 
 Future plans
 ------------
@@ -91,7 +92,6 @@ Future plans
 * Gii code generator (models, crud, queries)
 * Connection slaves support
 * Queue
-* Cache
 
 
 Running tests

@@ -25,14 +25,13 @@ $ php yii tarantool-migrate --migrationNamespaces=\\mhthnz\\tarantool\\session\\
 
 Storage
 ----------------------
-If you want to use different storage like vinyl - you have to copy migration:
-`yii2-tarantool/src/session/migrations/m230214_190000_create_table_session.php`
-To your migration directory and:
+If you want to use different storage like vinyl, or change session table name - you have make new migration inherited from `mhthnz\tarantool\session\migrations\m230214_190000_create_table_session`
+to your migration directory and change protected properties:
 ```php 
-# Replace this
-$this->createTable
-# To this
-$this->createVinylTable
+class m230214_210000_create_table_session extends \mhthnz\tarantool\session\migrations\m230214_190000_create_table_session
+{
+    protected $tableName = "{{%another_session_table}}";
+    protected $storage = "vinyl";
 ```
 
 More about session

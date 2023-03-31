@@ -193,7 +193,7 @@ class m150101_185401_create_tables extends Migration
         
         // Perform NoSQL queries
         // Create memtx engine space with specified column schema
-        \$this->createMemtxSpace('myspace', [
+        $this->createMemtxSpace('myspace', [
             ['name' => 'id', 'type' => 'unsigned', 'is_nullable' => false],
             ['name' => 'name', 'type' => 'string', 'is_nullable' => false],
             ['name' => 'field', 'type' => 'integer', 'is_nullable' => true],
@@ -202,29 +202,29 @@ class m150101_185401_create_tables extends Migration
         ], ['id' => 111]);
         
         // Create vinyl engine space without strict column schema
-        \$this->createVinylSpace('myspace1');
+        $this->createVinylSpace('myspace1');
         
         // Create space indexes
-        \$this->createSpaceIndex('myspace', 'pk', ['id' => 'unsigned'], true, 'HASH');
-        \$this->createSpaceIndex('myspace', 'stringindex', ['name' => 'string']);
-        \$this->createSpaceIndex('myspace', 'uniq', ['uniq' => 'integer'], true);
+        $this->createSpaceIndex('myspace', 'pk', ['id' => 'unsigned'], true, 'HASH');
+        $this->createSpaceIndex('myspace', 'stringindex', ['name' => 'string']);
+        $this->createSpaceIndex('myspace', 'uniq', ['uniq' => 'integer'], true);
         
         
         // Insert data into space
-        \$this->spaceInsert('myspace', [1, "text", 10, 11, 12]);
-        \$this->spaceInsert('myspace', [2, "text 1", 11, 12, 13]);
-        \$this->spaceInsert('myspace', [3, "text 2", 12, 13, 14]);
+        $this->spaceInsert('myspace', [1, "text", 10, 11, 12]);
+        $this->spaceInsert('myspace', [2, "text 1", 11, 12, 13]);
+        $this->spaceInsert('myspace', [3, "text 2", 12, 13, 14]);
         
         // Update upsert replace
-        \$this->spaceUpdate('myspace', 1, \Tarantool\Client\Schema\Operations::set(1, "new text"));
-        \$this->spaceUpsert('myspace', [2, "text 1", 11, 12, 13], \Tarantool\Client\Schema\Operations::set(1, "upsert text"));
-        \$this->spaceUpsert('myspace', [4, "text 4", 111, 121, 131], \Tarantool\Client\Schema\Operations::set(1, "upsert text"));
-        \$this->spaceReplace('myspace', [3, "text replaced", 12, 13, 14111]);
-        \$this->spaceReplace('myspace', [5, "text 5", 121, 131, 14121]);
+        $this->spaceUpdate('myspace', 1, \Tarantool\Client\Schema\Operations::set(1, "new text"));
+        $this->spaceUpsert('myspace', [2, "text 1", 11, 12, 13], \Tarantool\Client\Schema\Operations::set(1, "upsert text"));
+        $this->spaceUpsert('myspace', [4, "text 4", 111, 121, 131], \Tarantool\Client\Schema\Operations::set(1, "upsert text"));
+        $this->spaceReplace('myspace', [3, "text replaced", 12, 13, 14111]);
+        $this->spaceReplace('myspace', [5, "text 5", 121, 131, 14121]);
         
         // Evaluate lua expression / Call lua function
-        \$this->evaluate('box.space.myspace1:insert(...)', [[61, 'text 6', 777, 666, 555]]);
-        \$this->call('box.space.myspace:insert', [[61, 'text 6', 777, 666, 555]]);
+        $response = $this->evaluate('box.space.myspace1:insert(...)', [[61, 'text 6', 777, 666, 555]]);
+        $response = $this->call('box.space.myspace:insert', [[61, 'text 6', 777, 666, 555]]);
 
     }
 
@@ -237,28 +237,28 @@ class m150101_185401_create_tables extends Migration
         $this->dropTable('table4');
         
         // Perform NoSQL queries
-        // Call/Eval
-        \$this->call('box.space.myspace:delete', [61]);
-        \$this->evaluate('box.space.myspace1:delete(...)', [61]);
+        // Call/Eval, you can use response in your migration
+        $response = $this->call('box.space.myspace:delete', [61]);
+        $response = $this->evaluate('box.space.myspace1:delete(...)', [61]);
         
         // Update/Delete
-        \$this->spaceDelete('myspace', 5);
-        \$this->spaceUpdate('myspace', 1, \Tarantool\Client\Schema\Operations::set(1, "text"));
-        \$this->spaceUpdate('myspace', 3, \Tarantool\Client\Schema\Operations::set(1, "text 2"));
+        $this->spaceDelete('myspace', 5);
+        $this->spaceUpdate('myspace', 1, \Tarantool\Client\Schema\Operations::set(1, "text"));
+        $this->spaceUpdate('myspace', 3, \Tarantool\Client\Schema\Operations::set(1, "text 2"));
         
         // Truncate space
-        \$this->truncateSpace('myspace');
-        \$this->spaceDelete('myspace1', ['pk' => 2]);
-        \$this->spaceDelete('myspace1', 3);
+        $this->truncateSpace('myspace');
+        $this->spaceDelete('myspace1', ['pk' => 2]);
+        $this->spaceDelete('myspace1', 3);
         
         // Drop space index
-        \$this->dropSpaceIndex('myspace', 'stringindex');
-        \$this->dropSpaceIndex('myspace', 'uniq');
-        \$this->dropSpaceIndex('myspace', 'pk');
+        $this->dropSpaceIndex('myspace', 'stringindex');
+        $this->dropSpaceIndex('myspace', 'uniq');
+        $this->dropSpaceIndex('myspace', 'pk');
         
         // Drop spaces
-        \$this->dropSpace('myspace');
-        \$this->dropSpace('myspace1');
+        $this->dropSpace('myspace');
+        $this->dropSpace('myspace1');
     }
 }
 ```
