@@ -88,7 +88,7 @@ class Cache extends \yii\caching\Cache
     protected function setValue($key, $value, $duration)
     {
         $cmd = $this->db->createNosqlCommand()->replace($this->spaceName, [$key, $duration, $this->typecastData($value)]);
-        $cmd->enableLogging = $this->enableProfiling;
+        $cmd->enableProfiling = $this->enableProfiling;
         $cmd->execute();
 
         return true;
