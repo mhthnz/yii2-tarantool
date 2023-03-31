@@ -380,6 +380,7 @@ class Migration extends Component implements MigrationInterface
         $time = $this->beginCommand("drop table $table");
         $this->db->createCommand()->dropTable($table)->execute();
         $this->endCommand($time);
+        $this->db->client->flushSpaces();
     }
 
     /**
@@ -533,6 +534,7 @@ class Migration extends Component implements MigrationInterface
         $time = $this->beginCommand($command->getStringRequest());
         $command->execute();
         $this->endCommand($time);
+        $this->db->client->flushSpaces();
     }
 
     /**
@@ -683,6 +685,7 @@ class Migration extends Component implements MigrationInterface
      * @throws ClientException
      * @throws InvalidConfigException
      * @throws \Throwable
+     * @return mixed
      */
     public function call(string $func, array $params = [])
     {
@@ -690,6 +693,8 @@ class Migration extends Component implements MigrationInterface
         $time = $this->beginCommand($command->getStringRequest());
         $command->execute();
         $this->endCommand($time);
+
+        return $command->getResponseData();
     }
 
     /**
@@ -700,6 +705,7 @@ class Migration extends Component implements MigrationInterface
      * @throws ClientException
      * @throws \Throwable
      * @throws InvalidConfigException
+     * @return mixed
      */
     public function evaluate(string $expr, array $params = [])
     {
@@ -707,6 +713,8 @@ class Migration extends Component implements MigrationInterface
         $time = $this->beginCommand($command->getStringRequest());
         $command->execute();
         $this->endCommand($time);
+
+        return $command->getResponseData();
     }
 
     /**
@@ -718,7 +726,7 @@ class Migration extends Component implements MigrationInterface
      * @throws InvalidConfigException
      * @throws \Throwable
      */
-    protected function createSpace(string $name, array $format, string $engine, array $options)
+    protected function createSpace(string $name, array $format, string $engine, array $options = [])
     {
         $command = $this->db->createNosqlCommand()->createSpace($name, $format, $engine, $options);
         $time = $this->beginCommand($command->getStringRequest());

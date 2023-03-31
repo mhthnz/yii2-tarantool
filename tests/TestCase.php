@@ -36,6 +36,14 @@ class TestCase extends \PHPUnit\Framework\TestCase
         return self::getConnection();
     }
 
+    /**
+     * @return array
+     */
+    protected function getSpaces()
+    {
+        return ArrayHelper::index($this->getDb()->createNosqlCommand()->call("box.space._space:select")->execute()->getResponseData()[0], '2');
+    }
+
     public static function __callStatic($name, $arguments) {
         if ($name === 'getDb') {
             return call_user_func(array(TestCase::class, 'getDbStatic'), []);

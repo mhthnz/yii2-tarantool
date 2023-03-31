@@ -46,6 +46,12 @@ class Command extends BaseObject
     public $forRead;
 
     /**
+     * Enable logging for current command.
+     * @var bool
+     */
+    public $enableProfiling = true;
+
+    /**
      * Map for detecting what types are for read and can be used by slave.
      * @var array
      */
@@ -578,6 +584,9 @@ class Command extends BaseObject
      */
     protected function logQuery($category)
     {
+        if (!$this->enableProfiling) {
+            return [false, null];
+        }
         if ($this->db->enableLogging) {
             $req = $this->getStringRequest();
             Yii::info($req, $category);

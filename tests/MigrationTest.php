@@ -2,6 +2,7 @@
 
 namespace mhthnz\tarantool\tests;
 
+use mhthnz\tarantool\cache\expirationd\migrations\m230330_104511_create_cache_space;
 use mhthnz\tarantool\console\MigrateController;
 use mhthnz\tarantool\Migration;
 use mhthnz\tarantool\QueryBuilder;
@@ -25,6 +26,7 @@ use yii\db\IndexConstraint;
 use mhthnz\tarantool\Schema;
 use yii\db\Query;
 use mhthnz\tarantool\TableSchema;
+use yii\helpers\ArrayHelper;
 
 class MigrationTest extends TestCase
 {
@@ -1107,4 +1109,60 @@ CODE
         $this->assertNotContains('auth_item_child', $t);
         $this->assertNotContains('auth_assignment', $t);
     }
+
+    public function testCacheMigrations()
+    {
+        $config = [
+            'migrationPath' => [],
+            'migrationNamespaces' => ['\mhthnz\tarantool\cache\expirationd\migrations']
+        ];
+
+        $this->dropSpacesIfExist(['_yii2_expirationd_cache']);
+        $res = $this->runMigrateControllerAction('new', [], $config);
+        $this->assertTrue((bool) preg_match('/m230330_104511_create_cache_space/', $res));
+
+        $this->runMigrateControllerAction('up', [1], $config);
+        $spaces = $this->getSpaces();
+
+        $this->assertArrayHasKey('_yii2_expirationd_cache', $spaces);
+        $resp = $this->getDb()->createNosqlCommand()->call("expirationd.stats", ['_yii2_expiration_task'])->execute()->getResponseData();
+        $this->assertTrue(count($resp[0]) > 0);
+        $this->runMigrateControllerAction('down', [1], $config);
+
+        $thrown = false;
+        try {
+            $this->getDb()->createNosqlCommand()->call("expirationd.stats", ['_yii2_expiration_task'])->execute()->getResponseData();
+        } catch (\Exception $e) {
+            $thrown = true;
+        }
+        $this->assertTrue($thrown);
+
+        $spaces = $this->getSpaces();
+        $this->assertArrayNotHasKey('_yii2_expirationd_cache', $spaces);
+    }
+
+    public function testSessionMigrations()
+    {
+        $config = [
+            'migrationPath' => [],
+            'migrationNamespaces' => ['\mhthnz\tarantool\session\migrations']
+        ];
+
+
+        $res = $this->runMigrateControllerAction('new', [], $config);
+        $this->assertTrue((bool) preg_match('/m230214_190000_create_table_session/', $res));
+
+        $this->runMigrateControllerAction('up', [1], $config);
+        $t = self::getDb()->schema->getTableNames();
+        $this->assertContains('session', $t);
+
+        $idx = self::getDb()->schema->getTableIndexes('session');
+        $this->assertCount(2, $idx);
+
+        $this->runMigrateControllerAction('down', [1], $config);
+
+        $t = self::getDb()->schema->getTableNames('', true);
+        $this->assertNotContains('session', $t);
+    }
+
 }
