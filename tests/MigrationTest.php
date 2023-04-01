@@ -1148,7 +1148,6 @@ CODE
             'migrationNamespaces' => ['\mhthnz\tarantool\session\migrations']
         ];
 
-
         $res = $this->runMigrateControllerAction('new', [], $config);
         $this->assertTrue((bool) preg_match('/m230214_190000_create_table_session/', $res));
 
@@ -1165,4 +1164,32 @@ CODE
         $this->assertNotContains('session', $t);
     }
 
+    public function testI18nMigrations()
+    {
+        $config = [
+            'migrationPath' => [],
+            'migrationNamespaces' => ['\mhthnz\tarantool\i18n\migrations']
+        ];
+
+        $res = $this->runMigrateControllerAction('new', [], $config);
+        var_dump($res);
+        $this->assertTrue((bool) preg_match('/m230401_092642_create_i18n_tables/', $res));
+
+        $this->runMigrateControllerAction('up', [1], $config);
+        $t = self::getDb()->schema->getTableNames();
+        $this->assertContains('message', $t);
+        $this->assertContains('source_message', $t);
+
+        $idx = self::getDb()->schema->getTableIndexes('message');
+        $this->assertCount(2, $idx);
+
+        $idx = self::getDb()->schema->getTableIndexes('source_message');
+        $this->assertCount(2, $idx);
+
+        $this->runMigrateControllerAction('down', [1], $config);
+
+        $t = self::getDb()->schema->getTableNames('', true);
+        $this->assertNotContains('message', $t);
+        $this->assertNotContains('source_message', $t);
+    }
 }

@@ -19,6 +19,11 @@ use mhthnz\tarantool\rbac\DbManager;
 class m140506_102106_rbac_init extends \mhthnz\tarantool\Migration
 {
     /**
+     * @var string
+     */
+    protected $engine = 'memtx';
+
+    /**
      * @throws \yii\base\InvalidConfigException
      * @return DbManager
      */
@@ -42,7 +47,7 @@ class m140506_102106_rbac_init extends \mhthnz\tarantool\Migration
         $authManager = $this->getAuthManager();
         $this->db = $authManager->db;
 
-        $tableOptions = null;
+        $tableOptions = "WITH ENGINE='{$this->engine}'";
 
         $this->createTable($authManager->ruleTable, [
             'id' => $this->primaryKey(),

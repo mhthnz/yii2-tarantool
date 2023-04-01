@@ -83,11 +83,11 @@ Features
 * [Rbac db source](docs/RBAC.md)
 * [Session](docs/SESSION.md) 
 * [Cache](docs/CACHE-EXPIRATIOND.md) (by [expirationd](https://github.com/tarantool/expirationd), [docs](https://tarantool.github.io/expirationd/))
+* [I18n translate source](docs/I18N.md)
 
 Future plans
 ------------
 
-* I18n source
 * Transactions
 * Gii code generator (models, crud, queries)
 * Connection slaves support
