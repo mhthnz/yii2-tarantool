@@ -41,33 +41,6 @@ class TarantoolI18NSourceTest extends I18N
         return MessageSource::class;
     }
 
-    protected static function runConsoleAction($route, $params = [])
-    {
-        if (Yii::$app === null) {
-            new \yii\console\Application([
-                'id' => 'Migrator',
-                'basePath' => __DIR__,
-                'vendorPath' => VENDOR_PATH,
-                'runtimePath' => dirname(__DIR__) . '/runtime',
-                'controllerMap' => [
-                    'migrate' => EchoMigrateController::className(),
-                ],
-                'components' => [
-                    'tarantool' => static::getConnection(),
-                ],
-            ]);
-        }
-
-        ob_start();
-        $result = Yii::$app->runAction($route, $params);
-        echo 'Result is ' . $result;
-        if ($result !== \yii\console\Controller::EXIT_CODE_NORMAL) {
-            ob_end_flush();
-        } else {
-            ob_end_clean();
-        }
-    }
-
     public static function setUpBeforeClass(): void
     {
         self::$db = self::getDbStatic();

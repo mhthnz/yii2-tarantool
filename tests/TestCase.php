@@ -6,6 +6,7 @@ namespace mhthnz\tarantool\tests;
 
 use mhthnz\tarantool\Connection;
 use mhthnz\tarantool\Schema;
+use mhthnz\tarantool\tests\classes\EchoMigrateController;
 use Yii;
 use yii\base\NotSupportedException;
 use yii\base\UnknownMethodException;
@@ -34,6 +35,35 @@ class TestCase extends \PHPUnit\Framework\TestCase
     protected static function getDbStatic()
     {
         return self::getConnection();
+    }
+
+    protected static function runConsoleAction($route, $params = [], $components = [])
+    {
+        if (Yii::$app === null) {
+            new \yii\console\Application([
+                'id' => 'Migrator',
+                'basePath' => __DIR__,
+                'vendorPath' => VENDOR_PATH,
+                'runtimePath' => dirname(__DIR__) . '/runtime',
+                'controllerMap' => [
+                    'migrate' => EchoMigrateController::className(),
+                ],
+                'components' => array_merge([
+                    'tarantool' => static::getConnection(),
+                ], $components),
+            ]);
+        }
+
+        ob_start();
+        $result = Yii::$app->runAction($route, $params);
+        echo 'Result is ' . $result;
+        if ($result !== \yii\console\Controller::EXIT_CODE_NORMAL) {
+            ob_end_flush();
+        } else {
+            ob_end_clean();
+        }
+
+        return $result;
     }
 
     /**

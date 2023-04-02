@@ -10,3 +10,4 @@ Docs
 * [Caching data with tarantool](CACHE-EXPIRATIOND.md)
 * [I18n translate source](I18N.md)
 * [GII codegen](GII.md)
+* [Tarantool log target](LOG.md)

@@ -318,9 +318,10 @@ class Command extends BaseObject
      * @param string $indexName
      * @param array $fields
      * @param bool $unique
+     * @param ?string $sequence Adding sequence to index
      * @return $this
      */
-    public function createIndex(string $space, string $indexName, array $fields, bool $unique = false, string $type = "tree")
+    public function createIndex(string $space, string $indexName, array $fields, bool $unique = false, string $type = "tree", ?string $sequence = null)
     {
         // keep this for validate space name for preventing vulnerabilities (like code injection)
         $this->db->getMasterClient()->getSpace($space);
@@ -334,8 +335,56 @@ class Command extends BaseObject
             $opts['unique'] = $unique;
         }
 
+        if (!is_null($sequence)) {
+            $opts['sequence'] = $sequence;
+        }
+
         $opts['type'] = $type;
         $this->_request = new CallRequest("box.space.$space:create_index", [$indexName, $opts]);
+
+        return $this;
+    }
+
+    /**
+     * Create sequence that can be used in index for autoincrement.
+     * @see https://www.tarantool.io/en/doc/latest/how-to/db/sequences/#index-box-sequence
+     * @param string $name
+     * @param int|null $start
+     * @param int|null $min 1 by default
+     * @param int|null $max PHP_INT_MAX or 9223372036854775807 by default
+     * @param bool|null $cycle
+     * @param int|null $step
+     * @return $this
+     */
+    public function createSequence(
+        string $name,
+        ?int $start = null,
+        ?int $min = null,
+        ?int $max = null,
+        ?bool $cycle = null,
+        ?int $step = null
+    ){
+        $opts = [];
+        foreach (['start', 'min', 'max', 'cycle', 'step'] as $param) {
+            $val = ${$param};
+            if (!is_null($val)) {
+                $opts[$param] = $val;
+            }
+        }
+        $this->_request = new CallRequest("box.schema.sequence.create", [$name, $opts]);
+
+        return $this;
+    }
+
+    /**
+     * Drop existing sequence.
+     * If it is used by index - drop index first.
+     * @param string $name
+     * @return $this
+     */
+    public function dropSequence(string $name)
+    {
+        $this->_request = new CallRequest("box.sequence." . self::clearCommandParts($name) . ":drop");
 
         return $this;
     }
@@ -619,4 +668,13 @@ class Command extends BaseObject
         return [$indexID, $key];
     }
 
+    /**
+     * Removes dangerous symbols for avoiding injection.
+     * @param string $part
+     * @return string
+     */
+    protected static function clearCommandParts(string $part): string
+    {
+        return str_replace(['(', ')', "'", '"', "[", "]", ".", ":"], "", $part);
+    }
 }

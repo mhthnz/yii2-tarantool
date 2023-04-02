@@ -85,6 +85,7 @@ Features
 * [Cache](docs/CACHE-EXPIRATIOND.md) (by [expirationd](https://github.com/tarantool/expirationd), [docs](https://tarantool.github.io/expirationd/))
 * [I18n translate source](docs/I18N.md)
 * [Gii code generator](docs/GII.md) (ActiveRecord models, controllers, search models)
+* [Log target](docs/LOG.md)
 
 Future plans
 ------------

@@ -538,6 +538,23 @@ class Migration extends Component implements MigrationInterface
     }
 
     /**
+     * Drop existing sequence.
+     * If it is used by index - drop index first.
+     * @param string $name
+     * @return void
+     * @throws ClientException
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    public function dropSequence(string $name)
+    {
+        $command = $this->db->createNosqlCommand()->dropSequence($name);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
      * Clears space data (doesn't reset sequence) using nosql interface.
      * @see \mhthnz\tarantool\nosql\Command::truncateSpace()
      * @param string $name
@@ -565,9 +582,33 @@ class Migration extends Component implements MigrationInterface
      * @throws InvalidConfigException
      * @throws \Throwable
      */
-    public function createSpaceIndex(string $space, string $indexName, array $fields, bool $unique = false, string $type = "tree")
+    public function createSpaceIndex(string $space, string $indexName, array $fields, bool $unique = false, string $type = "tree", ?string $sequence = null)
     {
-        $command = $this->db->createNosqlCommand()->createIndex($space, $indexName, $fields, $unique, $type);
+        $command = $this->db->createNosqlCommand()->createIndex($space, $indexName, $fields, $unique, $type, $sequence);
+        $time = $this->beginCommand($command->getStringRequest());
+        $command->execute();
+        $this->endCommand($time);
+    }
+
+    /**
+     * Create sequence that can be used in index for autoincrement.
+     * @see https://www.tarantool.io/en/doc/latest/how-to/db/sequences/#index-box-sequence
+     * @param string $name
+     * @param int|null $start
+     * @param int|null $min 1 by default
+     * @param int|null $max PHP_INT_MAX or 9223372036854775807 by default
+     * @param bool|null $cycle
+     * @param int|null $step
+     */
+    public function createSequence(
+        string $name,
+        ?int $start = null,
+        ?int $min = null,
+        ?int $max = null,
+        ?bool $cycle = null,
+        ?int $step = null
+    ){
+        $command = $this->db->createNosqlCommand()->createSequence($name, $start, $min, $max, $cycle, $step);
         $time = $this->beginCommand($command->getStringRequest());
         $command->execute();
         $this->endCommand($time);
@@ -588,6 +629,7 @@ class Migration extends Component implements MigrationInterface
         $time = $this->beginCommand($command->getStringRequest());
         $command->execute();
         $this->endCommand($time);
+        $this->db->getMasterClient()->getSpace($space)->flushIndexes();
     }
 
     /**
