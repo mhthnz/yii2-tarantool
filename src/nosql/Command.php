@@ -377,6 +377,20 @@ class Command extends BaseObject
     }
 
     /**
+     * Check that sequence exists.
+     * @param string $spaceName
+     * @return bool
+     * @throws ClientException
+     * @throws \Throwable
+     */
+    public function sequenceExists(string $spaceName): bool
+    {
+        $this->_request = new EvaluateRequest('return box.sequence["' . self::clearCommandParts($spaceName) . '"]');
+        $resp = $this->execute()->getResponseData();
+        return $resp[0] !== null;
+    }
+
+    /**
      * Drop existing sequence.
      * If it is used by index - drop index first.
      * @param string $name

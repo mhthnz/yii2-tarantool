@@ -774,4 +774,40 @@ INSERT INTO {{type}} ([[int_col]], [[char_col]], [[float_col]], [[blob_col]], [[
 
         $this->assertNull($db->getSchema()->getTableSchema($viewName));
     }
+
+    public function testCreateDropSequence()
+    {
+        $db = $this->getConnection();
+
+        if ($db->createNosqlCommand()->sequenceExists("new_seq")) {
+            $db->createNosqlCommand()->dropSequence("new_seq")->execute();
+        }
+
+        $resp = $db->createNosqlCommand()->createSequence("new_seq")->execute()->getResponseData();
+        $this->assertTrue(isset($resp[0]));
+        $this->assertTrue($resp[0]['step'] === 1);
+        $this->assertTrue($resp[0]['min'] === 1);
+        $this->assertTrue($resp[0]['cycle'] === false);
+        $this->assertTrue($resp[0]['name'] === "new_seq");
+        $this->assertTrue($resp[0]['start'] === 1);
+
+        $this->assertTrue($db->createNosqlCommand()->sequenceExists("new_seq"));
+
+        $db->createNosqlCommand()->dropSequence("new_seq")->execute()->getResponseData();
+        $this->assertFalse($db->createNosqlCommand()->sequenceExists("new_seq"));
+
+        $resp = $db->createNosqlCommand()->createSequence("new_seq", 10, 9, 20, true, 2)->execute()->getResponseData();
+        $this->assertTrue(isset($resp[0]));
+        $this->assertTrue($resp[0]['step'] === 2);
+        $this->assertTrue($resp[0]['min'] === 9);
+        $this->assertTrue($resp[0]['max'] === 20);
+        $this->assertTrue($resp[0]['cycle'] === true);
+        $this->assertTrue($resp[0]['name'] === "new_seq");
+        $this->assertTrue($resp[0]['start'] === 10);
+
+        $this->assertTrue($db->createNosqlCommand()->sequenceExists("new_seq"));
+
+        $db->createNosqlCommand()->dropSequence("new_seq")->execute()->getResponseData();
+        $this->assertFalse($db->createNosqlCommand()->sequenceExists("new_seq"));
+    }
 }

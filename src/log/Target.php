@@ -90,6 +90,7 @@ class Target extends \yii\log\Target
                     $text = VarDumper::export($text);
                 }
             }
+            // TODO: probably switching to SQL is better for logs to avoid receiving inserted tuple (it can be big)
             $resp = $command->insert($this->logSpace, [null, $level, $category, $timestamp, $this->getMessagePrefix($message), $text])->execute()->getResponseData();
             if (count($resp) > 0) {
                 continue;

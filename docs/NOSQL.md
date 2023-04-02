@@ -198,4 +198,10 @@ $conn->createNosqlCommand(new SelectRequest($spaceID, $indexID, $key, $offset, $
 $cmd = $conn->createNosqlCommand()->insert('spacename', [1, "name", "2021-03-12", 12]);
 $cmd->enableProfiling = false;
 $cmd->execute();
+
+// Create/drop sequence
+$db->createNosqlCommand()->createSequence("new_seq")->execute();
+$db->createNosqlCommand()->dropSequence("new_seq")->execute();
+$db->createNosqlCommand()->createSequence("new_seq", 10, 9, 20, true, 2)->execute(); // Set additional params
+$db->createNosqlCommand()->sequenceExists("new_seq"); // Check sequence existing
 ```
