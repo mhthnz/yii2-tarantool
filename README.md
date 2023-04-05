@@ -1,5 +1,10 @@
-Tarantool connector for yii2 framework
-======================================
+<p align="center" style="text-align: center">
+    <a href="https://github.com/yiisoft" target="_blank">
+        <img src="https://yiisoft.github.io/docs/images/yii_logo.svg" height="100px" alt="YiiFramework">
+    </a>
+    <h1 align="center">Tarantool connector for yii2 framework</h1>
+</p>
+
 [![Latest Stable Version](http://poser.pugx.org/mhthnz/yii2-tarantool/v)](https://github.com/mhthnz/yii2-tarantool/releases/latest)
 [![Latest Unstable Version](http://poser.pugx.org/mhthnz/yii2-tarantool/v/unstable)](https://packagist.org/packages/mhthnz/yii2-tarantool#dev-master)
 ![Master Branch Tests](https://github.com/mhthnz/yii2-tarantool/actions/workflows/php.yml/badge.svg?branch=master)
