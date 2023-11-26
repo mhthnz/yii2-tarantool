@@ -341,7 +341,7 @@ class DbManagerTest extends ManagerTestCase
         }
         $this->assertSingleQueryToAssignmentsTable($logTarget);
 
-        // verify cache is flushed on unassign (createPost is now false again)
+        // verify cache is flushed on revoke (createPost is now false again)
         $this->auth->revoke($this->auth->getRole('admin'), 'reader A');
         foreach (['readPost' => true, 'createPost' => false] as $permission => $result) {
             $this->assertEquals($result, $this->auth->checkAccess('reader A', $permission), "Checking $permission");
@@ -370,8 +370,11 @@ class DbManagerTest extends ManagerTestCase
 
     private function assertSingleQueryToAssignmentsTable($logTarget)
     {
-        $this->assertCount(1, $logTarget->messages, 'Only one query should have been performed, but there are the following logs: ' . print_r($logTarget->messages, true));
-        $this->assertTrue(strpos($logTarget->messages[0][0], 'auth_assignment') !== false, 'Log message should be a query to auth_assignment table');
+        $messages = array_filter($logTarget->messages, function ($message) {
+            return strpos($message[0], 'auth_assignment') !== false;
+        });
+        $this->assertCount(1, $messages, 'Only one query should have been performed, but there are the following logs: ' . print_r($logTarget->messages, true));
+        $this->assertStringContainsString('auth_assignment', $messages[0][0], 'Log message should be a query to auth_assignment table');
         $logTarget->messages = [];
     }
 

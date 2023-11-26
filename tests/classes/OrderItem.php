@@ -30,9 +30,9 @@ class OrderItem extends ActiveRecord
     {
         return [
             'typecast' => [
-                'class' => AttributeTypecastBehavior::className(),
+                'class' => AttributeTypecastBehavior::class,
                 'attributeTypes' => [
-                    'order_id' => AttributeTypecastBehavior::TYPE_STRING,
+                    'order_id' => AttributeTypecastBehavior::TYPE_INTEGER,
                 ],
                 'typecastAfterValidate' => false,
                 'typecastAfterFind' => true,
