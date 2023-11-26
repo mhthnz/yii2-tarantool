@@ -110,9 +110,7 @@ $ docker run --name mytarantool -p3301:3301 -d tarantool/tarantool:2.4.1
 ```
 * Install php deps
 ```bash
-$ sudo apt install php-mbstring php-dom
-
-$ sudo apt install php7.3-mbstring php7.3-dom # or specify php version 
+$ sudo apt install php7.3-mbstring php7.3-dom php7.3-intl # specify php version 
 ```
 
 * Install vendor
