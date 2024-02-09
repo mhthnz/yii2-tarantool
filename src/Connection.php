@@ -268,6 +268,13 @@ class Connection extends Component
     public $enableProfiling = true;
 
     /**
+     * @var bool whether to enable using of SQL prepared statements. Defaults to true.
+     *
+     * @see enablePreparedStatements
+     */
+    public $enablePreparedStatements = true;
+
+    /**
      * @var string
      */
     public $version;
@@ -634,6 +641,7 @@ class Connection extends Component
             'class' => 'mhthnz\tarantool\Command',
             'db' => $this,
             'sql' => $sql,
+            'enablePreparedStatements' => $this->enablePreparedStatements,
         ];
         /** @var Command $command */
         $command = Yii::createObject($config);

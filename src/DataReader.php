@@ -130,7 +130,9 @@ class DataReader extends \yii\base\BaseObject implements \Iterator, \Countable
      */
     public function close()
     {
-        $this->_stmt->close();
+        if ($this->_stmt) {
+            $this->_stmt->close();
+        }
         $this->_closed = true;
     }
 

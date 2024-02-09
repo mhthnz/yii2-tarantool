@@ -34,6 +34,13 @@ class Command extends \yii\db\Command
     public $db;
 
     /**
+     * @var bool whether to enable using of prepared statements
+     *
+     * @see enablePreparedStatements
+     */
+    public $enablePreparedStatements;
+
+    /**
      * @var callable a callable (e.g. anonymous function) that is called when [[\yii\db\Exception]] is thrown
      * when executing the command.
      */
@@ -176,7 +183,18 @@ class Command extends \yii\db\Command
         while (true) {
             try {
                 $attempt++;
-                $this->response = $this->preparedStatement->execute(...$this->formatParams());
+                if (null !== $this->preparedStatement) {
+                    $this->response = $this->preparedStatement->execute(...$this->formatParams());
+                }
+                else {
+                    $sql = $this->getSql();
+                    if ($this->db->getSchema()->isReadQuery($sql)) {
+                        $client = $this->db->getSlaveClient();
+                    } else {
+                        $client = $this->db->getMasterClient();
+                    }
+                    $this->response = $client->execute($sql, ... $this->formatParams());
+                }
                 break;
             } catch (\Exception $e) {
                 $rawSql = $rawSql ?: $this->getRawSql();
@@ -209,7 +227,7 @@ class Command extends \yii\db\Command
      */
     public function prepare($forRead = null)
     {
-        if ($this->preparedStatement) {
+        if ($this->preparedStatement || false === $this->enablePreparedStatements) {
             return;
         }
 
